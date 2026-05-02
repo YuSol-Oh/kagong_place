@@ -23,16 +23,7 @@ function TagChip({ label, selected, onClick, size = "md" }) {
 }
 
 // ===================== 길찾기 URL 생성 =====================
-function getDirectionsUrl(cafe, userLocation) {
-  const dest = `${cafe.lng},${cafe.lat}`;
-  const destName = encodeURIComponent(cafe.name);
-  if (userLocation) {
-    const origin = `${userLocation.lng},${userLocation.lat}`;
-    return `https://map.naver.com/p/directions/${origin}/${dest}/${destName}/car`;
-  }
-  // 현위치 모를 때: 목적지만 지정하여 네이버 지도 길찾기 페이지 열기
-  return `https://map.naver.com/p/directions/-/${dest}/${destName}/car`;
-}
+
 function Stars({ rating }) {
   if (!rating) return null;
   return (
@@ -447,8 +438,7 @@ function FilterModal({ activeFilters, onApply, onClose }) {
 }
 
 // ===================== CAFE DETAIL =====================
-function CafeDetail({ cafe, onBack, onWriteReview, onLike, likedReviews, userLocation, isFavorite, onToggleFavorite }) {
-  const tagRows = [
+function CafeDetail({ cafe, onBack, onWriteReview, onLike, likedReviews, isFavorite, onToggleFavorite }) {  const tagRows = [
     { label: "콘센트", val: cafe.tags.콘센트 },
     { label: "분위기", val: cafe.tags.분위기 },
     { label: "소음", val: cafe.tags.소음 },
@@ -502,17 +492,6 @@ function CafeDetail({ cafe, onBack, onWriteReview, onLike, likedReviews, userLoc
             🗺️ 네이버 지도에서 보기
           </a>
         )}
-        <a
-          href={getDirectionsUrl(cafe, userLocation)}
-          target="_blank" rel="noopener noreferrer"
-          style={{
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-            padding: "10px", background: "#fff", borderRadius: 12,
-            color: PURPLE, fontSize: 14, fontWeight: 600, textDecoration: "none",
-            marginBottom: 20, border: `1.5px solid ${PURPLE}`
-          }}>
-          🧭 네이버 지도에서 길찾기
-        </a>
 
         {/* Owner comment */}
         <div style={{
@@ -892,7 +871,6 @@ function App() {
             onWriteReview={() => setScreen("review")}
             onLike={handleLike}
             likedReviews={likedReviews}
-            userLocation={userLocation}
             isFavorite={favorites.includes(selectedCafe.id)}
             onToggleFavorite={toggleFavorite}
           />
