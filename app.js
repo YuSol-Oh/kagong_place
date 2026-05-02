@@ -48,45 +48,103 @@ function MapScreen({ cafes, selectedCafe, onMarkerClick }) {
   const mapInstanceRef = useRef(null);
   const markersRef = useRef({});
   const mapDivRef = useRef(null);
+  const myLocationMarkerRef = useRef(null);
 
   useEffect(() => {
     if (mapInstanceRef.current || !mapDivRef.current) return;
-    const map = L.map(mapDivRef.current, {
-      center: [37.5326, 127.0243], zoom: 13,
-      zoomControl: false, attributionControl: false
+
+    const map = new naver.maps.Map(mapDivRef.current, {
+      center: new naver.maps.LatLng(37.5326, 127.0243),
+      zoom: 13,
     });
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(map);
+
     mapInstanceRef.current = map;
 
-    // 현위치
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(pos => {
-        const { latitude: lat, longitude: lng } = pos.coords;
-        map.setView([lat, lng], 14);
-        const icon = L.divIcon({
-          html: `<div style="width:16px;height:16px;background:#4A90E2;border-radius:50%;border:3px solid white;box-shadow:0 0 0 5px rgba(74,144,226,0.22)"></div>`,
-          className: "", iconSize: [16,16], iconAnchor: [8,8]
-        });
-        L.marker([lat, lng], { icon }).addTo(map);
-      }, () => {});
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          const position = new naver.maps.LatLng(lat, lng);
+
+          map.setCenter(position);
+          map.setZoom(14);
+
+          myLocationMarkerRef.current = new naver.maps.Marker({
+            position,
+            map,
+            title: "내 위치",
+            icon: {
+              content: `
+                <div style="
+                  width:16px;
+                  height:16px;
+                  background:#4A90E2;
+                  border-radius:50%;
+                  border:3px solid white;
+                  box-shadow:0 0 0 5px rgba(74,144,226,0.22);
+                "></div>
+              `,
+              anchor: new naver.maps.Point(8, 8),
+            },
+          });
+        },
+        () => {}
+      );
     }
 
-    return () => { map.remove(); mapInstanceRef.current = null; };
+    return () => {
+      Object.values(markersRef.current).forEach((m) => m.setMap(null));
+      markersRef.current = {};
+      if (myLocationMarkerRef.current) {
+        myLocationMarkerRef.current.setMap(null);
+      }
+      mapInstanceRef.current = null;
+    };
   }, []);
 
-  // 마커 업데이트
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
-    Object.values(markersRef.current).forEach(m => map.removeLayer(m));
+
+    Object.values(markersRef.current).forEach((m) => m.setMap(null));
     markersRef.current = {};
-    cafes.forEach(cafe => {
+
+    cafes.forEach((cafe) => {
+      if (cafe.lat == null || cafe.lng == null) return;
+
       const isSelected = selectedCafe?.id === cafe.id;
       const size = isSelected ? 44 : 36;
-      const html = `<div style="width:${size}px;height:${size}px;background:${isSelected ? PURPLE_DARK : PURPLE};border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:${isSelected ? 20 : 16}px;box-shadow:0 3px 10px rgba(124,111,205,${isSelected ? 0.6 : 0.35});border:${isSelected ? "3px" : "2px"} solid white;cursor:pointer;">📍</div>`;
-      const icon = L.divIcon({ html, className: "", iconSize: [size,size], iconAnchor: [size/2,size/2] });
-      const marker = L.marker([cafe.lat, cafe.lng], { icon }).addTo(map);
-      marker.on("click", () => onMarkerClick(cafe));
+
+      const marker = new naver.maps.Marker({
+        position: new naver.maps.LatLng(cafe.lat, cafe.lng),
+        map,
+        title: cafe.name,
+        icon: {
+          content: `
+            <div style="
+              width:${size}px;
+              height:${size}px;
+              background:${isSelected ? PURPLE_DARK : PURPLE};
+              border-radius:50%;
+              display:flex;
+              align-items:center;
+              justify-content:center;
+              color:white;
+              font-size:${isSelected ? 20 : 16}px;
+              box-shadow:0 3px 10px rgba(124,111,205,0.35);
+              border:${isSelected ? "3px" : "2px"} solid white;
+              cursor:pointer;
+            ">📍</div>
+          `,
+          anchor: new naver.maps.Point(size / 2, size / 2),
+        },
+      });
+
+      naver.maps.Event.addListener(marker, "click", () => {
+        onMarkerClick(cafe);
+      });
+
       markersRef.current[cafe.id] = marker;
     });
   }, [cafes, selectedCafe]);
