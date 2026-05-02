@@ -17,11 +17,9 @@ const CARD_GRADIENTS = [
   "linear-gradient(135deg, #F5F3FF 0%, #DDD6FE 100%)",
 ];
 
-// ===================== 백엔드 URL =====================
 const BACKEND_URL = "https://kagongpossiblebackend-production.up.railway.app";
 
-// ===================== 세션 ID — 기기별 고유 ID =====================
-// 같은 기기에서만 본인 리뷰 삭제 가능
+// ===================== 세션 ID + 닉네임 =====================
 function getSessionId() {
   let sid = localStorage.getItem("kagong_session_id");
   if (!sid) {
@@ -32,20 +30,26 @@ function getSessionId() {
 }
 const SESSION_ID = getSessionId();
 
-// ===================== 통계 수집 track() =====================
+function getNickname() {
+  return localStorage.getItem("kagong_nickname") || "";
+}
+function saveNickname(name) {
+  localStorage.setItem("kagong_nickname", name);
+}
+
+// ===================== 통계 수집 =====================
 const track = async (eventName, params = {}) => {
   try {
-    const body = {
-      event:     eventName,
-      cafe_id:   params.cafe_id   ?? null,
-      cafe_name: params.cafe_name ?? null,
-      value:     params.source ?? params.search_term ?? params.filter_tags ?? params.filter_tag ?? null,
-      meta:      params,
-    };
     fetch(`${BACKEND_URL}/api/track`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+      body: JSON.stringify({
+        event: eventName,
+        cafe_id: params.cafe_id ?? null,
+        cafe_name: params.cafe_name ?? null,
+        value: params.source ?? params.search_term ?? params.filter_tags ?? params.filter_tag ?? null,
+        meta: params,
+      }),
     }).catch(() => {});
     console.log(`[TRACK] ${eventName}`, params);
   } catch (e) {}
@@ -53,21 +57,12 @@ const track = async (eventName, params = {}) => {
 
 // ===================== TAG CHIP =====================
 function TagChip({ label, selected, onClick, size = "md" }) {
-  const sizes = {
-    sm: { fontSize: 11, padding: "3px 9px" },
-    md: { fontSize: 13, padding: "6px 13px" }
-  };
+  const sizes = { sm: { fontSize: 11, padding: "3px 9px" }, md: { fontSize: 13, padding: "6px 13px" } };
   const colors = selected
     ? { background: PURPLE_LIGHT, borderColor: "#C4B5FD", color: PURPLE_DARK }
     : { background: "#F5F4FF", borderColor: "#E5E3F5", color: "#888" };
   return (
-    <button onClick={onClick} style={{
-      ...sizes[size], ...colors,
-      display: "inline-flex", alignItems: "center", justifyContent: "center",
-      borderRadius: 20, border: "1px solid", cursor: onClick ? "pointer" : "default",
-      fontFamily: "inherit", fontWeight: 600, transition: "all 0.15s", whiteSpace: "nowrap",
-      lineHeight: 1.2
-    }}>{label}</button>
+    <button onClick={onClick} style={{ ...sizes[size], ...colors, display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: 20, border: "1px solid", cursor: onClick ? "pointer" : "default", fontFamily: "inherit", fontWeight: 600, transition: "all 0.15s", whiteSpace: "nowrap", lineHeight: 1.2 }}>{label}</button>
   );
 }
 
@@ -90,25 +85,17 @@ function MapScreen({ cafes, selectedCafe, onMarkerClick }) {
 
   useEffect(() => {
     if (mapInstanceRef.current || !mapDivRef.current) return;
-    const map = new naver.maps.Map(mapDivRef.current, {
-      center: new naver.maps.LatLng(37.5326, 127.0243),
-      zoom: 13,
-    });
+    const map = new naver.maps.Map(mapDivRef.current, { center: new naver.maps.LatLng(37.5326, 127.0243), zoom: 13 });
     mapInstanceRef.current = map;
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const position = new naver.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
-          map.setCenter(position); map.setZoom(14);
-          myLocationMarkerRef.current = new naver.maps.Marker({
-            position, map, title: "내 위치",
-            icon: {
-              content: `<div style="width:16px;height:16px;background:#4A90E2;border-radius:50%;border:3px solid white;box-shadow:0 0 0 6px rgba(74,144,226,0.2);"></div>`,
-              anchor: new naver.maps.Point(8, 8),
-            },
-          });
-        }, () => {}
-      );
+      navigator.geolocation.getCurrentPosition((pos) => {
+        const position = new naver.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
+        map.setCenter(position); map.setZoom(14);
+        myLocationMarkerRef.current = new naver.maps.Marker({
+          position, map, title: "내 위치",
+          icon: { content: `<div style="width:16px;height:16px;background:#4A90E2;border-radius:50%;border:3px solid white;box-shadow:0 0 0 6px rgba(74,144,226,0.2);"></div>`, anchor: new naver.maps.Point(8, 8) },
+        });
+      }, () => {});
     }
     return () => {
       Object.values(markersRef.current).forEach((m) => m.setMap(null));
@@ -128,8 +115,7 @@ function MapScreen({ cafes, selectedCafe, onMarkerClick }) {
       const isSelected = selectedCafe?.id === cafe.id;
       const size = isSelected ? 48 : 38;
       const marker = new naver.maps.Marker({
-        position: new naver.maps.LatLng(cafe.lat, cafe.lng),
-        map, title: cafe.name,
+        position: new naver.maps.LatLng(cafe.lat, cafe.lng), map, title: cafe.name,
         icon: {
           content: isSelected
             ? `<div style="display:flex;flex-direction:column;align-items:center;"><div style="width:${size}px;height:${size}px;background:${PURPLE_DARK};border-radius:50%;border:3px solid white;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 14px rgba(91,79,199,0.5);cursor:pointer;">☕</div><div style="background:#1a1a1a;color:#fff;font-size:10px;font-weight:600;padding:3px 8px;border-radius:6px;margin-top:4px;white-space:nowrap;">${cafe.name}</div></div>`
@@ -155,9 +141,7 @@ function AppHeader({ favorites, onFavoritesClick }) {
       </div>
       <button onClick={onFavoritesClick} style={{ width: 40, height: 40, borderRadius: "50%", background: favorites.length > 0 ? "#FFF0F3" : "rgba(255,255,255,0.95)", border: favorites.length > 0 ? "1.5px solid #FECDD3" : "1.5px solid #eee", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 10px rgba(0,0,0,0.1)", position: "relative" }}>
         <span style={{ fontSize: 17, color: favorites.length > 0 ? "#FF4B6E" : "#ccc" }}>{favorites.length > 0 ? "♥" : "♡"}</span>
-        {favorites.length > 0 && (
-          <span style={{ position: "absolute", top: -4, right: -4, background: PURPLE_DARK, color: "#fff", borderRadius: "50%", width: 16, height: 16, fontSize: 9, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{favorites.length}</span>
-        )}
+        {favorites.length > 0 && <span style={{ position: "absolute", top: -4, right: -4, background: PURPLE_DARK, color: "#fff", borderRadius: "50%", width: 16, height: 16, fontSize: 9, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{favorites.length}</span>}
       </button>
     </div>
   );
@@ -169,11 +153,7 @@ function SearchBar({ query, onChange, onFilterClick, filterCount }) {
   const handleChange = (val) => {
     onChange(val);
     if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-    if (val.trim().length >= 2) {
-      searchTimerRef.current = setTimeout(() => {
-        track("search", { search_term: val.trim() });
-      }, 800);
-    }
+    if (val.trim().length >= 2) searchTimerRef.current = setTimeout(() => track("search", { search_term: val.trim() }), 800);
   };
   return (
     <div style={{ position: "absolute", top: 56, left: 0, right: 0, zIndex: 1000, padding: "8px 16px" }}>
@@ -181,9 +161,9 @@ function SearchBar({ query, onChange, onFilterClick, filterCount }) {
         <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.97)", borderRadius: 14, padding: "11px 14px", boxShadow: "0 4px 20px rgba(0,0,0,0.12)", border: "1px solid rgba(124,111,205,0.15)" }}>
           <svg width="15" height="15" fill="none" stroke={PURPLE_MID} strokeWidth="2.2" strokeLinecap="round"><circle cx="6.5" cy="6.5" r="5"/><line x1="10" y1="10" x2="14" y2="14"/></svg>
           <input value={query} onChange={e => handleChange(e.target.value)} placeholder="카페 이름 또는 지역 검색" style={{ border: "none", outline: "none", flex: 1, fontSize: 14, color: "#333", background: "transparent", fontFamily: "inherit" }} />
-          {query && <button onClick={() => onChange("")} style={{ background: "#eee", border: "none", cursor: "pointer", color: "#999", fontSize: 12, padding: 0, lineHeight: 1, width: 18, height: 18, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>}
+          {query && <button onClick={() => onChange("")} style={{ background: "#eee", border: "none", cursor: "pointer", color: "#999", fontSize: 12, padding: 0, width: 18, height: 18, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>}
         </div>
-        <button onClick={() => { track("filter_button_tap"); onFilterClick(); }} style={{ background: filterCount > 0 ? PURPLE_DARK : PURPLE, color: "#fff", border: "none", borderRadius: 14, padding: "11px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 12px rgba(91,79,199,0.4)", position: "relative" }}>
+        <button onClick={() => { track("filter_button_tap"); onFilterClick(); }} style={{ background: filterCount > 0 ? PURPLE_DARK : PURPLE, color: "#fff", border: "none", borderRadius: 14, padding: "11px 16px", cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 12px rgba(91,79,199,0.4)", position: "relative" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 3, marginBottom: 1 }}>
             <div style={{ width: 14, height: 1.5, background: "#fff", borderRadius: 1 }}></div>
             <div style={{ width: 10, height: 1.5, background: "rgba(255,255,255,0.7)", borderRadius: 1, marginLeft: 2 }}></div>
@@ -300,10 +280,7 @@ function CafeListPanel({ cafes, onSelectCafe, filterCount, searchQuery }) {
     if (filterCount > 0 || searchQuery) setExpanded(true);
     else setExpanded(false);
   }, [filterCount, searchQuery]);
-  const sortedCafes = [...cafes].sort((a, b) => {
-    if (sortBy === "rating") return (b.rating || 0) - (a.rating || 0);
-    return 0;
-  });
+  const sortedCafes = [...cafes].sort((a, b) => sortBy === "rating" ? (b.rating || 0) - (a.rating || 0) : 0);
   return (
     <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 850, background: "#fff", borderRadius: "20px 20px 0 0", boxShadow: "0 -4px 24px rgba(0,0,0,0.10)", transition: "height 0.35s cubic-bezier(0.4,0,0.2,1)", height: expanded ? "55vh" : 68, display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <div onClick={() => setExpanded(e => !e)} style={{ padding: "12px 18px 10px", cursor: "pointer", flexShrink: 0 }}>
@@ -363,14 +340,7 @@ function CafeListPanel({ cafes, onSelectCafe, filterCount, searchQuery }) {
 // ===================== FILTER MODAL =====================
 function FilterModal({ activeFilters, onApply, onClose }) {
   const [local, setLocal] = useState(JSON.parse(JSON.stringify(activeFilters)));
-  const toggle = (cat, tag) => {
-    setLocal(prev => {
-      const arr = [...(prev[cat] || [])];
-      const idx = arr.indexOf(tag);
-      if (idx >= 0) arr.splice(idx, 1); else arr.push(tag);
-      return { ...prev, [cat]: arr };
-    });
-  };
+  const toggle = (cat, tag) => { setLocal(prev => { const arr = [...(prev[cat] || [])]; const idx = arr.indexOf(tag); if (idx >= 0) arr.splice(idx, 1); else arr.push(tag); return { ...prev, [cat]: arr }; }); };
   const isOn = (cat, tag) => (local[cat] || []).includes(tag);
   const totalSelected = Object.values(local).flat().length;
   const reset = () => setLocal(Object.fromEntries(Object.keys(FILTER_CATEGORIES).map(k => [k, []])));
@@ -383,7 +353,7 @@ function FilterModal({ activeFilters, onApply, onClose }) {
             <span style={{ fontSize: 19, fontWeight: 800, color: "#1a1a1a" }}>필터</span>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               {totalSelected > 0 && <button onClick={reset} style={{ background: PURPLE_LIGHT, border: "none", cursor: "pointer", color: PURPLE_DARK, fontSize: 13, fontWeight: 600, fontFamily: "inherit", borderRadius: 8, padding: "5px 12px" }}>초기화</button>}
-              <button onClick={onClose} style={{ background: "#f5f5f7", border: "none", cursor: "pointer", color: "#555", fontSize: 18, lineHeight: 1, padding: 0, width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+              <button onClick={onClose} style={{ background: "#f5f5f7", border: "none", cursor: "pointer", color: "#555", fontSize: 18, width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
             </div>
           </div>
         </div>
@@ -391,18 +361,13 @@ function FilterModal({ activeFilters, onApply, onClose }) {
           {Object.entries(FILTER_CATEGORIES).map(([cat, tags]) => (
             <div key={cat} style={{ marginBottom: 24 }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: "#888", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.05em" }}>{cat}</div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {tags.map(tag => <TagChip key={tag} label={tag} selected={isOn(cat, tag)} onClick={() => toggle(cat, tag)} />)}
-              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>{tags.map(tag => <TagChip key={tag} label={tag} selected={isOn(cat, tag)} onClick={() => toggle(cat, tag)} />)}</div>
             </div>
           ))}
         </div>
         <div style={{ padding: "14px 20px 40px" }}>
-          <button onClick={() => {
-            const appliedTags = Object.entries(local).flatMap(([cat, vals]) => (vals || []).map(v => `${cat}:${v}`));
-            track("filter_apply", { filter_tags: appliedTags.join(","), filter_count: appliedTags.length });
-            onApply(local);
-          }} style={{ width: "100%", padding: "16px", background: totalSelected > 0 ? PURPLE_DARK : PURPLE, color: "#fff", border: "none", borderRadius: 16, fontSize: 16, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 14px rgba(91,79,199,0.4)" }}>
+          <button onClick={() => { const t = Object.entries(local).flatMap(([c, v]) => (v || []).map(x => `${c}:${x}`)); track("filter_apply", { filter_tags: t.join(","), filter_count: t.length }); onApply(local); }}
+            style={{ width: "100%", padding: "16px", background: totalSelected > 0 ? PURPLE_DARK : PURPLE, color: "#fff", border: "none", borderRadius: 16, fontSize: 16, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 14px rgba(91,79,199,0.4)" }}>
             {totalSelected > 0 ? `필터 적용 (${totalSelected})` : "적용하기"}
           </button>
         </div>
@@ -412,31 +377,21 @@ function FilterModal({ activeFilters, onApply, onClose }) {
 }
 
 // ===================== CAFE DETAIL =====================
-function CafeDetail({ cafe, cafeIndex, onBack, onWriteReview, onLike, likedReviews, isFavorite, onToggleFavorite }) {
-  const [dbReviews, setDbReviews] = useState(null); // null = 로딩 중
+function CafeDetail({ cafe, cafeIndex, onBack, onWriteReview, onLike, isFavorite, onToggleFavorite }) {
+  const [dbReviews, setDbReviews] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [editingReview, setEditingReview] = useState(null); // 수정 중인 리뷰
 
-  const tagRows = [
-    { label: "콘센트", val: cafe.tags.콘센트 },
-    { label: "분위기", val: cafe.tags.분위기 },
-    { label: "소음", val: cafe.tags.소음 },
-  ].filter(r => r.val);
-  const tagArrayRows = [
-    { label: "공간", val: cafe.tags.공간 },
-    { label: "테이블", val: cafe.tags.테이블 },
-    { label: "메뉴", val: cafe.tags.메뉴 },
-  ].filter(r => r.val && r.val.length > 0);
+  const tagRows = [{ label: "콘센트", val: cafe.tags.콘센트 }, { label: "분위기", val: cafe.tags.분위기 }, { label: "소음", val: cafe.tags.소음 }].filter(r => r.val);
+  const tagArrayRows = [{ label: "공간", val: cafe.tags.공간 }, { label: "테이블", val: cafe.tags.테이블 }, { label: "메뉴", val: cafe.tags.메뉴 }].filter(r => r.val && r.val.length > 0);
   const gradient = CARD_GRADIENTS[cafeIndex % CARD_GRADIENTS.length];
 
-  // Supabase에서 리뷰 불러오기
   const fetchReviews = async () => {
     try {
       const res = await fetch(`${BACKEND_URL}/api/reviews/${cafe.id}`);
       const data = await res.json();
       setDbReviews(Array.isArray(data) ? data : []);
-    } catch (e) {
-      setDbReviews([]);
-    }
+    } catch (e) { setDbReviews([]); }
   };
 
   useEffect(() => {
@@ -444,7 +399,6 @@ function CafeDetail({ cafe, cafeIndex, onBack, onWriteReview, onLike, likedRevie
     fetchReviews();
   }, [cafe.id]);
 
-  // 리뷰 삭제
   const handleDeleteReview = async (reviewId) => {
     if (!confirm("이 리뷰를 삭제할까요?")) return;
     setDeletingId(reviewId);
@@ -458,20 +412,14 @@ function CafeDetail({ cafe, cafeIndex, onBack, onWriteReview, onLike, likedRevie
       if (data.ok) {
         track("review_delete", { cafe_id: cafe.id, cafe_name: cafe.name });
         setDbReviews(prev => prev.filter(r => r.id !== reviewId));
-      } else {
-        alert(data.error || "삭제할 수 없어요");
-      }
-    } catch (e) {
-      alert("삭제 중 오류가 발생했어요");
-    } finally {
-      setDeletingId(null);
-    }
+      } else { alert(data.error || "삭제할 수 없어요"); }
+    } catch (e) { alert("삭제 중 오류가 발생했어요"); }
+    finally { setDeletingId(null); }
   };
 
-  // 좋아요
   const handleLikeReview = async (reviewId) => {
     const key = `liked_review_${reviewId}`;
-    if (localStorage.getItem(key)) return; // 이미 좋아요 누름
+    if (localStorage.getItem(key)) return;
     try {
       const res = await fetch(`${BACKEND_URL}/api/reviews/${reviewId}/like`, { method: "PATCH" });
       const data = await res.json();
@@ -483,13 +431,26 @@ function CafeDetail({ cafe, cafeIndex, onBack, onWriteReview, onLike, likedRevie
     } catch (e) {}
   };
 
-  // 주인장/일반 리뷰 분리
   const ownerReviews = cafe.reviews.filter(r => r.isOwner);
   const userReviews = dbReviews === null ? [] : dbReviews.filter(r => !r.is_owner);
 
+  // 수정 모달이 열려있을 때
+  if (editingReview) {
+    return (
+      <EditReview
+        cafe={cafe}
+        review={editingReview}
+        onBack={() => setEditingReview(null)}
+        onSaved={(updated) => {
+          setDbReviews(prev => prev.map(r => r.id === updated.id ? updated : r));
+          setEditingReview(null);
+        }}
+      />
+    );
+  }
+
   return (
     <div style={{ position: "absolute", inset: 0, background: "#fff", zIndex: 1500, overflowY: "auto", animation: "slideInRight 0.28s ease" }} className="no-scroll">
-      {/* Hero */}
       <div style={{ position: "relative", width: "100%", height: 200, background: gradient, flexShrink: 0 }}>
         <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 64, opacity: 0.6 }}>☕</div>
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(255,255,255,0.6) 0%, transparent 60%)" }} />
@@ -533,7 +494,6 @@ function CafeDetail({ cafe, cafeIndex, onBack, onWriteReview, onLike, likedRevie
 
         <div style={{ height: 1, background: "#f0f0f4", margin: "20px 0" }} />
 
-        {/* 주인장 리뷰 */}
         {ownerReviews.map((rev, i) => (
           <div key={`owner-${i}`} style={{ marginBottom: 22 }}>
             <div style={{ fontSize: 14, fontWeight: 800, color: "#1a1a1a", marginBottom: 12 }}>오늘도 카공중인 주인장 리뷰</div>
@@ -546,7 +506,6 @@ function CafeDetail({ cafe, cafeIndex, onBack, onWriteReview, onLike, likedRevie
 
         <div style={{ height: 1, background: "#f0f0f4", margin: "4px 0 20px" }} />
 
-        {/* 유저 리뷰 헤더 */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <span style={{ fontSize: 14, fontWeight: 800, color: "#1a1a1a" }}>
             카공러들의 리뷰 <span style={{ color: PURPLE_DARK }}>{userReviews.length}</span>
@@ -555,12 +514,7 @@ function CafeDetail({ cafe, cafeIndex, onBack, onWriteReview, onLike, likedRevie
             style={{ background: PURPLE_DARK, color: "#fff", border: "none", borderRadius: 10, padding: "7px 15px", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 2px 8px rgba(91,79,199,0.35)" }}>리뷰 쓰기</button>
         </div>
 
-        {/* 리뷰 로딩 중 */}
-        {dbReviews === null && (
-          <div style={{ textAlign: "center", padding: "24px 0", color: "#bbb", fontSize: 13 }}>리뷰 불러오는 중...</div>
-        )}
-
-        {/* 리뷰 없음 */}
+        {dbReviews === null && <div style={{ textAlign: "center", padding: "24px 0", color: "#bbb", fontSize: 13 }}>리뷰 불러오는 중...</div>}
         {dbReviews !== null && userReviews.length === 0 && (
           <div style={{ textAlign: "center", padding: "36px 0", color: "#ccc", fontSize: 14 }}>
             <div style={{ fontSize: 36, marginBottom: 10 }}>☕</div>
@@ -568,7 +522,6 @@ function CafeDetail({ cafe, cafeIndex, onBack, onWriteReview, onLike, likedRevie
           </div>
         )}
 
-        {/* 리뷰 목록 */}
         {userReviews.map((rev, i, arr) => {
           const isMyReview = rev.session_id === SESSION_ID;
           const isLiked = !!localStorage.getItem(`liked_review_${rev.id}`);
@@ -577,19 +530,22 @@ function CafeDetail({ cafe, cafeIndex, onBack, onWriteReview, onLike, likedRevie
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 14, fontWeight: 700, color: "#1a1a1a" }}>{rev.user_name}</span>
-                  {/* 내 리뷰 표시 */}
-                  {isMyReview && (
-                    <span style={{ fontSize: 10, background: PURPLE_LIGHT, color: PURPLE_DARK, borderRadius: 20, padding: "2px 7px", fontWeight: 600 }}>내 리뷰</span>
-                  )}
+                  {isMyReview && <span style={{ fontSize: 10, background: PURPLE_LIGHT, color: PURPLE_DARK, borderRadius: 20, padding: "2px 7px", fontWeight: 600 }}>내 리뷰</span>}
+                  {rev.is_edited && <span style={{ fontSize: 10, color: "#bbb" }}>(수정됨)</span>}
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 12, color: "#bbb" }}>{new Date(rev.created_at).toLocaleDateString("ko-KR")}</span>
-                  {/* 삭제 버튼 — 내 리뷰일 때만 표시 */}
                   {isMyReview && (
-                    <button onClick={() => handleDeleteReview(rev.id)} disabled={deletingId === rev.id}
-                      style={{ background: "none", border: "none", cursor: "pointer", fontSize: 12, color: "#FF4757", fontFamily: "inherit", padding: "2px 6px", borderRadius: 6, fontWeight: 600, opacity: deletingId === rev.id ? 0.5 : 1 }}>
-                      {deletingId === rev.id ? "삭제 중..." : "삭제"}
-                    </button>
+                    <>
+                      {/* 수정 버튼 */}
+                      <button onClick={() => setEditingReview(rev)}
+                        style={{ background: "none", border: "none", cursor: "pointer", fontSize: 12, color: PURPLE_DARK, fontFamily: "inherit", padding: "2px 6px", borderRadius: 6, fontWeight: 600 }}>수정</button>
+                      {/* 삭제 버튼 */}
+                      <button onClick={() => handleDeleteReview(rev.id)} disabled={deletingId === rev.id}
+                        style={{ background: "none", border: "none", cursor: "pointer", fontSize: 12, color: "#FF4757", fontFamily: "inherit", padding: "2px 6px", borderRadius: 6, fontWeight: 600, opacity: deletingId === rev.id ? 0.5 : 1 }}>
+                        {deletingId === rev.id ? "삭제 중..." : "삭제"}
+                      </button>
+                    </>
                   )}
                 </div>
               </div>
@@ -609,11 +565,20 @@ function CafeDetail({ cafe, cafeIndex, onBack, onWriteReview, onLike, likedRevie
   );
 }
 
-// ===================== WRITE REVIEW =====================
-function WriteReview({ cafe, onBack, onSubmit }) {
-  const [selected, setSelected] = useState({});
-  const [text, setText] = useState("");
-  const [done, setDone] = useState(false);
+// ===================== EDIT REVIEW — 리뷰 수정 =====================
+function EditReview({ cafe, review, onBack, onSaved }) {
+  const [selected, setSelected] = useState(() => {
+    const obj = {};
+    if (review.tags) {
+      Object.entries(FILTER_CATEGORIES).forEach(([cat, tags]) => {
+        const matched = tags.filter(t => review.tags.includes(t));
+        if (matched.length > 0) obj[cat] = matched;
+      });
+    }
+    return obj;
+  });
+  const [text, setText] = useState(review.text || "");
+  const [nickname, setNickname] = useState(review.user_name || getNickname() || "");
   const [loading, setLoading] = useState(false);
 
   const toggle = (cat, tag) => {
@@ -626,38 +591,118 @@ function WriteReview({ cafe, onBack, onSubmit }) {
   };
   const isOn = (cat, tag) => (selected[cat] || []).includes(tag);
 
-  const submit = async () => {
+  const handleSave = async () => {
     if (!text.trim()) { alert("한줄평을 입력해주세요"); return; }
+    if (!nickname.trim()) { alert("닉네임을 입력해주세요"); return; }
     setLoading(true);
     const allTags = Object.values(selected).flat();
-
     try {
-      // Supabase에 리뷰 저장
-      const res = await fetch(`${BACKEND_URL}/api/reviews`, {
-        method: "POST",
+      const res = await fetch(`${BACKEND_URL}/api/reviews/${review.id}`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          cafe_id: cafe.id,
-          cafe_name: cafe.name,
-          user_name: "카공러",
+          session_id: SESSION_ID,
           tags: allTags,
           text: text.trim(),
-          session_id: SESSION_ID,
-          is_owner: false,
+          user_name: nickname.trim(),
         }),
       });
       const data = await res.json();
       if (!data.ok) throw new Error(data.error);
+      saveNickname(nickname.trim());
+      track("review_edit", { cafe_id: cafe.id, cafe_name: cafe.name });
+      onSaved(data.review);
+    } catch (e) {
+      alert("수정 중 오류가 발생했어요. 다시 시도해주세요.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      track("review_submit", {
-        cafe_id: cafe.id, cafe_name: cafe.name,
-        tags_count: allTags.length, text_length: text.length
+  return (
+    <div style={{ position: "absolute", inset: 0, background: "#fff", zIndex: 2000, overflowY: "auto", animation: "slideInRight 0.28s ease" }} className="no-scroll">
+      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "18px 20px 16px", borderBottom: "1px solid #f0f0f4", position: "sticky", top: 0, background: "#fff", zIndex: 10 }}>
+        <button onClick={onBack} style={{ background: "#f5f5f7", border: "none", cursor: "pointer", borderRadius: "50%", width: 34, height: 34, fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center", color: "#444" }}>←</button>
+        <span style={{ fontSize: 17, fontWeight: 800 }}>리뷰 수정</span>
+      </div>
+      <div style={{ padding: "22px 20px 120px" }}>
+        <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 4, color: "#1a1a1a" }}>{cafe.name}</h2>
+        <p style={{ fontSize: 13, color: "#bbb", marginBottom: 24 }}>내용을 수정하고 저장해주세요</p>
+
+        {/* 닉네임 */}
+        <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 10, color: "#1a1a1a" }}>닉네임</div>
+        <input value={nickname} onChange={e => setNickname(e.target.value)} placeholder="닉네임을 입력하세요" maxLength={20}
+          style={{ width: "100%", border: `1.5px solid ${nickname ? PURPLE : "#E5E3F5"}`, borderRadius: 12, padding: "11px 14px", fontSize: 14, fontFamily: "inherit", outline: "none", color: "#333", background: "#fafafe", marginBottom: 20 }}
+          onFocus={e => e.target.style.borderColor = PURPLE}
+          onBlur={e => e.target.style.borderColor = nickname ? PURPLE : "#E5E3F5"} />
+
+        {/* 키워드 */}
+        <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 16, color: "#1a1a1a" }}>키워드 수정</div>
+        {Object.entries(FILTER_CATEGORIES).map(([cat, tags]) => (
+          <div key={cat} style={{ marginBottom: 20 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "#aaa", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.05em" }}>{cat}</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {tags.map(tag => <TagChip key={tag} label={tag} selected={isOn(cat, tag)} onClick={() => toggle(cat, tag)} />)}
+            </div>
+          </div>
+        ))}
+
+        <div style={{ height: 1, background: "#f0f0f4", margin: "8px 0 22px" }} />
+
+        {/* 한줄평 */}
+        <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 12, color: "#1a1a1a" }}>한줄평 수정</div>
+        <textarea value={text} onChange={e => setText(e.target.value)} placeholder="카공 경험을 자유롭게 적어주세요" maxLength={100}
+          style={{ width: "100%", minHeight: 90, border: `1.5px solid ${text ? PURPLE : "#E5E3F5"}`, borderRadius: 14, padding: "12px 14px", fontSize: 14, fontFamily: "inherit", resize: "none", outline: "none", color: "#333", background: "#fafafe", lineHeight: 1.7, transition: "border-color 0.15s" }}
+          onFocus={e => e.target.style.borderColor = PURPLE}
+          onBlur={e => e.target.style.borderColor = text ? PURPLE : "#E5E3F5"} />
+        <div style={{ textAlign: "right", fontSize: 12, color: "#ccc", marginTop: 4 }}>{text.length}/100</div>
+      </div>
+      <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 480, padding: "12px 20px 36px", background: "#fff", borderTop: "1px solid #f0f0f4" }}>
+        <button onClick={handleSave} disabled={loading}
+          style={{ width: "100%", padding: "15px", background: loading ? "#aaa" : PURPLE_DARK, color: "#fff", border: "none", borderRadius: 16, fontSize: 16, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", fontFamily: "inherit", boxShadow: "0 4px 14px rgba(91,79,199,0.4)" }}>
+          {loading ? "저장 중..." : "수정 완료"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ===================== WRITE REVIEW — 리뷰 작성 =====================
+function WriteReview({ cafe, onBack, onSubmit }) {
+  const [selected, setSelected] = useState({});
+  const [text, setText] = useState("");
+  // 저장된 닉네임 있으면 자동 입력
+  const [nickname, setNickname] = useState(getNickname);
+  const [done, setDone] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const toggle = (cat, tag) => { setSelected(prev => { const arr = [...(prev[cat] || [])]; const idx = arr.indexOf(tag); if (idx >= 0) arr.splice(idx, 1); else arr.push(tag); return { ...prev, [cat]: arr }; }); };
+  const isOn = (cat, tag) => (selected[cat] || []).includes(tag);
+
+  const submit = async () => {
+    if (!nickname.trim()) { alert("닉네임을 입력해주세요"); return; }
+    if (!text.trim()) { alert("한줄평을 입력해주세요"); return; }
+    setLoading(true);
+    const allTags = Object.values(selected).flat();
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/reviews`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cafe_id: cafe.id, cafe_name: cafe.name,
+          user_name: nickname.trim(),
+          tags: allTags, text: text.trim(),
+          session_id: SESSION_ID, is_owner: false,
+        }),
       });
-
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error);
+      saveNickname(nickname.trim()); // 닉네임 로컬에 저장
+      track("review_submit", { cafe_id: cafe.id, cafe_name: cafe.name, tags_count: allTags.length, text_length: text.length });
       setDone(true);
       setTimeout(() => onSubmit(selected, text), 1400);
     } catch (e) {
-      alert("리뷰 등록 중 오류가 발생했어요. 다시 시도해주세요.");
+      alert("리뷰 등록 중 오류가 발생했어요.");
     } finally {
       setLoading(false);
     }
@@ -682,16 +727,27 @@ function WriteReview({ cafe, onBack, onSubmit }) {
       <div style={{ padding: "22px 20px 120px" }}>
         <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 4, color: "#1a1a1a" }}>{cafe.name}</h2>
         <p style={{ fontSize: 13, color: "#bbb", marginBottom: 24 }}>이 카페에 대한 솔직한 리뷰를 남겨주세요 ☕</p>
+
+        {/* ★ 닉네임 입력 */}
+        <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 10, color: "#1a1a1a" }}>
+          닉네임
+          {getNickname() && <span style={{ fontSize: 11, color: "#bbb", fontWeight: 400, marginLeft: 8 }}>이전에 사용한 닉네임이 자동 입력됐어요</span>}
+        </div>
+        <input value={nickname} onChange={e => setNickname(e.target.value)} placeholder="닉네임을 입력하세요 (최대 20자)" maxLength={20}
+          style={{ width: "100%", border: `1.5px solid ${nickname ? PURPLE : "#E5E3F5"}`, borderRadius: 12, padding: "11px 14px", fontSize: 14, fontFamily: "inherit", outline: "none", color: "#333", background: "#fafafe", marginBottom: 24 }}
+          onFocus={e => e.target.style.borderColor = PURPLE}
+          onBlur={e => e.target.style.borderColor = nickname ? PURPLE : "#E5E3F5"} />
+
         <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 16, color: "#1a1a1a" }}>키워드 선택</div>
         {Object.entries(FILTER_CATEGORIES).map(([cat, tags]) => (
           <div key={cat} style={{ marginBottom: 20 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: "#aaa", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.05em" }}>{cat}</div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {tags.map(tag => <TagChip key={tag} label={tag} selected={isOn(cat, tag)} onClick={() => toggle(cat, tag)} />)}
-            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>{tags.map(tag => <TagChip key={tag} label={tag} selected={isOn(cat, tag)} onClick={() => toggle(cat, tag)} />)}</div>
           </div>
         ))}
+
         <div style={{ height: 1, background: "#f0f0f4", margin: "8px 0 22px" }} />
+
         <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 12, color: "#1a1a1a" }}>한줄평</div>
         <textarea value={text} onChange={e => setText(e.target.value)} placeholder="카공 경험을 자유롭게 적어주세요" maxLength={100}
           style={{ width: "100%", minHeight: 90, border: `1.5px solid ${text ? PURPLE : "#E5E3F5"}`, borderRadius: 14, padding: "12px 14px", fontSize: 14, fontFamily: "inherit", resize: "none", outline: "none", color: "#333", background: "#fafafe", lineHeight: 1.7, transition: "border-color 0.15s" }}
@@ -737,21 +793,13 @@ function App() {
   }, []);
 
   const handleQuickFilterToggle = (cat, val) => {
-    setActiveFilters(prev => {
-      const arr = [...(prev[cat] || [])];
-      const idx = arr.indexOf(val);
-      if (idx >= 0) arr.splice(idx, 1); else arr.push(val);
-      return { ...prev, [cat]: arr };
-    });
+    setActiveFilters(prev => { const arr = [...(prev[cat] || [])]; const idx = arr.indexOf(val); if (idx >= 0) arr.splice(idx, 1); else arr.push(val); return { ...prev, [cat]: arr }; });
   };
 
   const filterCount = Object.values(activeFilters).flat().length;
 
   const filteredCafes = cafes.filter(cafe => {
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      if (!cafe.name.toLowerCase().includes(q) && !cafe.address.toLowerCase().includes(q)) return false;
-    }
+    if (searchQuery) { const q = searchQuery.toLowerCase(); if (!cafe.name.toLowerCase().includes(q) && !cafe.address.toLowerCase().includes(q)) return false; }
     for (const [cat, vals] of Object.entries(activeFilters)) {
       if (!vals || vals.length === 0) continue;
       const cafeTags = cafe.tags[cat];
@@ -774,14 +822,8 @@ function App() {
   };
 
   const handleApplyFilter = filters => { setActiveFilters(filters); setShowFilter(false); };
-  const handleLike = (cafeId, reviewId) => {
-    setLikedReviews(prev => ({ ...prev, [`${cafeId}-${reviewId}`]: true }));
-  };
-
-  // 리뷰 등록 후 상세 페이지로 돌아가기 (DB에서 새로 불러옴)
-  const handleReviewSubmit = () => {
-    setTimeout(() => setScreen("detail"), 1500);
-  };
+  const handleLike = (cafeId, reviewId) => { setLikedReviews(prev => ({ ...prev, [`${cafeId}-${reviewId}`]: true })); };
+  const handleReviewSubmit = () => { setTimeout(() => setScreen("detail"), 1500); };
 
   return (
     <div className="app-shell">
@@ -800,7 +842,7 @@ function App() {
           <FavoritesScreen cafes={cafes} favorites={favorites} onSelectCafe={(cafe) => { handleSelectCafe(cafe); setScreen("detail"); setShowFavorites(false); }} onToggleFavorite={toggleFavorite} onClose={() => setShowFavorites(false)} />
         )}
         {screen === "detail" && selectedCafe && (
-          <CafeDetail cafe={cafes.find(c => c.id === selectedCafe.id) || selectedCafe} cafeIndex={selectedCafeIndex} onBack={() => setScreen("map")} onWriteReview={() => setScreen("review")} onLike={handleLike} likedReviews={likedReviews} isFavorite={favorites.includes(selectedCafe.id)} onToggleFavorite={toggleFavorite} />
+          <CafeDetail cafe={cafes.find(c => c.id === selectedCafe.id) || selectedCafe} cafeIndex={selectedCafeIndex} onBack={() => setScreen("map")} onWriteReview={() => setScreen("review")} onLike={handleLike} isFavorite={favorites.includes(selectedCafe.id)} onToggleFavorite={toggleFavorite} />
         )}
         {screen === "review" && selectedCafe && (
           <WriteReview cafe={selectedCafe} onBack={() => setScreen("detail")} onSubmit={handleReviewSubmit} />
