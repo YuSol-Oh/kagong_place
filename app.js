@@ -2,39 +2,53 @@ const { useState, useEffect, useRef, useCallback } = React;
 
 // ===================== CONSTANTS =====================
 const PURPLE = "#7C6FCD";
-const PURPLE_LIGHT = "#f0eeff";
+const PURPLE_LIGHT = "#EDE9FE";
 const PURPLE_DARK = "#5B4FC7";
+const PURPLE_MID = "#9B8FDB";
+
+// 카페 카드 썸네일 그라디언트 팔레트 (카페별로 다양하게)
+const CARD_GRADIENTS = [
+  "linear-gradient(135deg, #EDE9FE 0%, #C4B5FD 100%)",
+  "linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)",
+  "linear-gradient(135deg, #DCFCE7 0%, #A7F3D0 100%)",
+  "linear-gradient(135deg, #FCE7F3 0%, #FBCFE8 100%)",
+  "linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%)",
+  "linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%)",
+  "linear-gradient(135deg, #F0FDF4 0%, #BBF7D0 100%)",
+  "linear-gradient(135deg, #F5F3FF 0%, #DDD6FE 100%)",
+];
 
 // ===================== TAG CHIP =====================
 function TagChip({ label, selected, onClick, size = "md" }) {
-  const sizes = { sm: { fontSize: 12, padding: "4px 10px" }, md: { fontSize: 14, padding: "7px 14px" } };
+  const sizes = {
+    sm: { fontSize: 11, padding: "3px 9px" },
+    md: { fontSize: 13, padding: "6px 13px" }
+  };
   const colors = selected
-    ? { background: PURPLE, borderColor: PURPLE, color: "#fff" }
-    : { background: "#fff", borderColor: PURPLE, color: PURPLE };
+    ? { background: PURPLE_LIGHT, borderColor: "#C4B5FD", color: PURPLE_DARK }
+    : { background: "#F5F4FF", borderColor: "#E5E3F5", color: "#888" };
   return (
     <button onClick={onClick} style={{
       ...sizes[size], ...colors,
       display: "inline-flex", alignItems: "center", justifyContent: "center",
-      borderRadius: 20, border: "1.5px solid", cursor: onClick ? "pointer" : "default",
-      fontFamily: "inherit", fontWeight: 500, transition: "all 0.15s", whiteSpace: "nowrap",
+      borderRadius: 20, border: "1px solid", cursor: onClick ? "pointer" : "default",
+      fontFamily: "inherit", fontWeight: 600, transition: "all 0.15s", whiteSpace: "nowrap",
       lineHeight: 1.2
     }}>{label}</button>
   );
 }
 
-// ===================== 길찾기 URL 생성 =====================
-
 function Stars({ rating }) {
   if (!rating) return null;
   return (
     <span style={{ display: "flex", alignItems: "center", gap: 3 }}>
-      <span style={{ color: "#FFB800", fontSize: 13 }}>★</span>
-      <span style={{ fontSize: 13, fontWeight: 600, color: "#333" }}>{rating.toFixed(1)}</span>
+      <span style={{ color: "#FFB800", fontSize: 12 }}>★</span>
+      <span style={{ fontSize: 12, fontWeight: 700, color: "#FFB800" }}>{rating.toFixed(1)}</span>
     </span>
   );
 }
 
-// ===================== MAP SCREEN (Leaflet / OpenStreetMap) =====================
+// ===================== MAP SCREEN =====================
 function MapScreen({ cafes, selectedCafe, onMarkerClick }) {
   const mapInstanceRef = useRef(null);
   const markersRef = useRef({});
@@ -57,10 +71,8 @@ function MapScreen({ cafes, selectedCafe, onMarkerClick }) {
           const lat = pos.coords.latitude;
           const lng = pos.coords.longitude;
           const position = new naver.maps.LatLng(lat, lng);
-
           map.setCenter(position);
           map.setZoom(14);
-
           myLocationMarkerRef.current = new naver.maps.Marker({
             position,
             map,
@@ -68,14 +80,11 @@ function MapScreen({ cafes, selectedCafe, onMarkerClick }) {
             icon: {
               content: `
                 <div style="
-                  width:16px;
-                  height:16px;
-                  background:#4A90E2;
-                  border-radius:50%;
+                  width:16px; height:16px;
+                  background:#4A90E2; border-radius:50%;
                   border:3px solid white;
-                  box-shadow:0 0 0 5px rgba(74,144,226,0.22);
-                "></div>
-              `,
+                  box-shadow:0 0 0 6px rgba(74,144,226,0.2);
+                "></div>`,
               anchor: new naver.maps.Point(8, 8),
             },
           });
@@ -87,9 +96,7 @@ function MapScreen({ cafes, selectedCafe, onMarkerClick }) {
     return () => {
       Object.values(markersRef.current).forEach((m) => m.setMap(null));
       markersRef.current = {};
-      if (myLocationMarkerRef.current) {
-        myLocationMarkerRef.current.setMap(null);
-      }
+      if (myLocationMarkerRef.current) myLocationMarkerRef.current.setMap(null);
       mapInstanceRef.current = null;
     };
   }, []);
@@ -103,39 +110,43 @@ function MapScreen({ cafes, selectedCafe, onMarkerClick }) {
 
     cafes.forEach((cafe) => {
       if (cafe.lat == null || cafe.lng == null) return;
-
       const isSelected = selectedCafe?.id === cafe.id;
-      const size = isSelected ? 44 : 36;
+      const size = isSelected ? 48 : 38;
 
       const marker = new naver.maps.Marker({
         position: new naver.maps.LatLng(cafe.lat, cafe.lng),
         map,
         title: cafe.name,
         icon: {
-          content: `
-            <div style="
-              width:${size}px;
-              height:${size}px;
-              background:${isSelected ? PURPLE_DARK : PURPLE};
-              border-radius:50%;
-              display:flex;
-              align-items:center;
-              justify-content:center;
-              color:white;
-              font-size:${isSelected ? 20 : 16}px;
-              box-shadow:0 3px 10px rgba(124,111,205,0.35);
-              border:${isSelected ? "3px" : "2px"} solid white;
-              cursor:pointer;
-            ">📍</div>
-          `,
-          anchor: new naver.maps.Point(size / 2, size / 2),
+          content: isSelected
+            ? `<div style="display:flex;flex-direction:column;align-items:center;">
+                <div style="
+                  width:${size}px; height:${size}px;
+                  background:${PURPLE_DARK};
+                  border-radius:50%; border:3px solid white;
+                  display:flex; align-items:center; justify-content:center;
+                  font-size:20px;
+                  box-shadow:0 4px 14px rgba(91,79,199,0.5);
+                  cursor:pointer;">☕</div>
+                <div style="
+                  background:#1a1a1a; color:#fff; font-size:10px; font-weight:600;
+                  padding:3px 8px; border-radius:6px; margin-top:4px;
+                  white-space:nowrap; box-shadow:0 2px 6px rgba(0,0,0,0.2);
+                ">${cafe.name}</div>
+              </div>`
+            : `<div style="
+                width:${size}px; height:${size}px;
+                background:${PURPLE};
+                border-radius:50%; border:2.5px solid white;
+                display:flex; align-items:center; justify-content:center;
+                font-size:16px;
+                box-shadow:0 3px 10px rgba(124,111,205,0.35);
+                cursor:pointer;">☕</div>`,
+          anchor: new naver.maps.Point(size / 2, isSelected ? size / 2 : size / 2),
         },
       });
 
-      naver.maps.Event.addListener(marker, "click", () => {
-        onMarkerClick(cafe);
-      });
-
+      naver.maps.Event.addListener(marker, "click", () => onMarkerClick(cafe));
       markersRef.current[cafe.id] = marker;
     });
   }, [cafes, selectedCafe]);
@@ -143,37 +154,152 @@ function MapScreen({ cafes, selectedCafe, onMarkerClick }) {
   return <div ref={mapDivRef} style={{ width: "100%", height: "100%" }} />;
 }
 
+// ===================== APP HEADER =====================
+function AppHeader({ favorites, onFavoritesClick }) {
+  return (
+    <div style={{
+      position: "absolute", top: 0, left: 0, right: 0, zIndex: 1002,
+      padding: "14px 16px 0",
+      display: "flex", alignItems: "center", justifyContent: "space-between",
+    }}>
+      {/* 로고 */}
+      <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+        <div style={{
+          width: 32, height: 32, background: PURPLE_DARK,
+          borderRadius: 10, display: "flex", alignItems: "center",
+          justifyContent: "center", fontSize: 16,
+          boxShadow: "0 2px 8px rgba(91,79,199,0.35)"
+        }}>☕</div>
+        <span style={{ fontSize: 16, fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.3px" }}>카공지도</span>
+      </div>
+
+      {/* 즐겨찾기 버튼 */}
+      <button
+        onClick={onFavoritesClick}
+        style={{
+          width: 40, height: 40, borderRadius: "50%",
+          background: favorites.length > 0 ? "#FFF0F3" : "rgba(255,255,255,0.95)",
+          border: favorites.length > 0 ? "1.5px solid #FECDD3" : "1.5px solid #eee",
+          cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+          boxShadow: "0 2px 10px rgba(0,0,0,0.1)", position: "relative",
+          transition: "all 0.2s"
+        }}>
+        <span style={{ fontSize: 17, color: favorites.length > 0 ? "#FF4B6E" : "#ccc" }}>
+          {favorites.length > 0 ? "♥" : "♡"}
+        </span>
+        {favorites.length > 0 && (
+          <span style={{
+            position: "absolute", top: -4, right: -4,
+            background: PURPLE_DARK, color: "#fff", borderRadius: "50%",
+            width: 16, height: 16, fontSize: 9, fontWeight: 700,
+            display: "flex", alignItems: "center", justifyContent: "center"
+          }}>{favorites.length}</span>
+        )}
+      </button>
+    </div>
+  );
+}
+
 // ===================== SEARCH BAR =====================
 function SearchBar({ query, onChange, onFilterClick, filterCount }) {
   return (
-    <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 1000, padding: "12px 16px", display: "flex", gap: 8 }}>
-      <div style={{
-        flex: 1, display: "flex", alignItems: "center", gap: 8,
-        background: "#fff", borderRadius: 12, padding: "10px 14px",
-        boxShadow: "0 2px 16px rgba(0,0,0,0.13)"
-      }}>
-        <svg width="16" height="16" fill="none" stroke="#bbb" strokeWidth="2.2" strokeLinecap="round"><circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15"/></svg>
-        <input value={query} onChange={e => onChange(e.target.value)}
-          placeholder="카페 이름이나 지역을 검색하세요"
-          style={{ border: "none", outline: "none", flex: 1, fontSize: 14, color: "#333", background: "transparent", fontFamily: "inherit" }} />
-        {query && <button onClick={() => onChange("")} style={{ background: "none", border: "none", cursor: "pointer", color: "#bbb", fontSize: 16, padding: 0, lineHeight: 1 }}>✕</button>}
+    <div style={{
+      position: "absolute", top: 56, left: 0, right: 0, zIndex: 1000,
+      padding: "8px 16px"
+    }}>
+      <div style={{ display: "flex", gap: 8 }}>
+        <div style={{
+          flex: 1, display: "flex", alignItems: "center", gap: 8,
+          background: "rgba(255,255,255,0.97)",
+          borderRadius: 14, padding: "11px 14px",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.12)",
+          border: "1px solid rgba(124,111,205,0.15)"
+        }}>
+          <svg width="15" height="15" fill="none" stroke={PURPLE_MID} strokeWidth="2.2" strokeLinecap="round">
+            <circle cx="6.5" cy="6.5" r="5"/><line x1="10" y1="10" x2="14" y2="14"/>
+          </svg>
+          <input
+            value={query} onChange={e => onChange(e.target.value)}
+            placeholder="카페 이름 또는 지역 검색"
+            style={{
+              border: "none", outline: "none", flex: 1,
+              fontSize: 14, color: "#333", background: "transparent",
+              fontFamily: "inherit"
+            }}
+          />
+          {query && (
+            <button onClick={() => onChange("")} style={{
+              background: "#eee", border: "none", cursor: "pointer",
+              color: "#999", fontSize: 12, padding: 0, lineHeight: 1,
+              width: 18, height: 18, borderRadius: "50%",
+              display: "flex", alignItems: "center", justifyContent: "center"
+            }}>✕</button>
+          )}
+        </div>
+        <button onClick={onFilterClick} style={{
+          background: filterCount > 0 ? PURPLE_DARK : PURPLE,
+          color: "#fff", border: "none",
+          borderRadius: 14, padding: "11px 16px",
+          fontSize: 14, fontWeight: 700,
+          cursor: "pointer", fontFamily: "inherit",
+          boxShadow: "0 4px 12px rgba(91,79,199,0.4)",
+          whiteSpace: "nowrap", position: "relative"
+        }}>
+          {/* 필터 아이콘 */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 3, marginBottom: 1 }}>
+            <div style={{ width: 14, height: 1.5, background: "#fff", borderRadius: 1 }}></div>
+            <div style={{ width: 10, height: 1.5, background: "rgba(255,255,255,0.7)", borderRadius: 1, marginLeft: 2 }}></div>
+            <div style={{ width: 6, height: 1.5, background: "rgba(255,255,255,0.5)", borderRadius: 1, marginLeft: 4 }}></div>
+          </div>
+          {filterCount > 0 && (
+            <span style={{
+              position: "absolute", top: -5, right: -5,
+              background: "#FF4757", color: "#fff", borderRadius: "50%",
+              width: 18, height: 18, fontSize: 10, fontWeight: 700,
+              display: "flex", alignItems: "center", justifyContent: "center"
+            }}>{filterCount}</span>
+          )}
+        </button>
       </div>
-      <button onClick={onFilterClick} style={{
-        background: filterCount > 0 ? PURPLE_DARK : PURPLE, color: "#fff", border: "none",
-        borderRadius: 12, padding: "10px 16px", fontSize: 14, fontWeight: 600,
-        cursor: "pointer", fontFamily: "inherit", boxShadow: "0 2px 8px rgba(124,111,205,0.4)",
-        whiteSpace: "nowrap", position: "relative"
-      }}>
-        필터
-        {filterCount > 0 && (
-          <span style={{
-            position: "absolute", top: -6, right: -6,
-            background: "#FF4757", color: "#fff", borderRadius: "50%",
-            width: 18, height: 18, fontSize: 11, fontWeight: 700,
-            display: "flex", alignItems: "center", justifyContent: "center"
-          }}>{filterCount}</span>
-        )}
-      </button>
+    </div>
+  );
+}
+
+// ===================== QUICK FILTER BAR =====================
+const QUICK_FILTERS = [
+  { cat: "콘센트", val: "넉넉함", label: "콘센트 넉넉" },
+  { cat: "소음", val: "조용함", label: "조용함" },
+  { cat: "분위기", val: "카공러 다수", label: "카공러 다수" },
+  { cat: "소음", val: "적당함", label: "적당한 소음" },
+  { cat: "분위기", val: "모던한", label: "모던한" },
+];
+
+function QuickFilterBar({ activeFilters, onToggle }) {
+  const isOn = (cat, val) => (activeFilters[cat] || []).includes(val);
+  return (
+    <div style={{
+      position: "absolute", top: 112, left: 0, right: 0, zIndex: 999,
+      padding: "0 16px", overflowX: "auto",
+      display: "flex", gap: 7, scrollbarWidth: "none"
+    }} className="no-scroll">
+      {QUICK_FILTERS.map(f => {
+        const active = isOn(f.cat, f.val);
+        return (
+          <button key={`${f.cat}-${f.val}`} onClick={() => onToggle(f.cat, f.val)}
+            style={{
+              background: active ? PURPLE_DARK : "rgba(255,255,255,0.95)",
+              color: active ? "#fff" : "#555",
+              border: active ? `1.5px solid ${PURPLE_DARK}` : "1.5px solid rgba(255,255,255,0.8)",
+              borderRadius: 20, padding: "5px 12px",
+              fontSize: 12, fontWeight: 600, fontFamily: "inherit",
+              cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0,
+              boxShadow: active
+                ? "0 2px 8px rgba(91,79,199,0.4)"
+                : "0 2px 8px rgba(0,0,0,0.1)",
+              transition: "all 0.15s"
+            }}>{f.label}</button>
+        );
+      })}
     </div>
   );
 }
@@ -189,19 +315,28 @@ function FavoritesScreen({ cafes, favorites, onSelectCafe, onToggleFavorite, onC
     }}>
       <div style={{
         display: "flex", alignItems: "center", gap: 12,
-        padding: "16px 20px", borderBottom: "1px solid #f0f0f0",
+        padding: "18px 20px 16px",
+        borderBottom: "1px solid #f0f0f0",
         position: "sticky", top: 0, background: "#fff", zIndex: 10
       }}>
-        <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 18, padding: 0, color: "#333" }}>←</button>
-        <span style={{ fontSize: 17, fontWeight: 700 }}>즐겨찾기</span>
-        <span style={{ marginLeft: 4, fontSize: 14, color: PURPLE, fontWeight: 600 }}>{favCafes.length}</span>
+        <button onClick={onClose} style={{
+          background: "#f5f5f7", border: "none", cursor: "pointer",
+          borderRadius: "50%", width: 34, height: 34, fontSize: 16,
+          display: "flex", alignItems: "center", justifyContent: "center", color: "#444"
+        }}>←</button>
+        <span style={{ fontSize: 17, fontWeight: 800, color: "#1a1a1a" }}>즐겨찾기</span>
+        <span style={{
+          background: PURPLE_LIGHT, color: PURPLE_DARK,
+          borderRadius: 20, padding: "2px 10px",
+          fontSize: 13, fontWeight: 700
+        }}>{favCafes.length}</span>
       </div>
-      <div style={{ overflowY: "auto", flex: 1, padding: "12px 16px 32px" }} className="no-scroll">
+      <div style={{ overflowY: "auto", flex: 1, padding: "12px 16px 40px" }} className="no-scroll">
         {favCafes.length === 0 ? (
           <div style={{ textAlign: "center", padding: "60px 0", color: "#ccc" }}>
-            <div style={{ fontSize: 48, marginBottom: 12 }}>🤍</div>
-            <div style={{ fontSize: 15, fontWeight: 600, color: "#bbb", marginBottom: 6 }}>즐겨찾기한 카페가 없어요</div>
-            <div style={{ fontSize: 13, color: "#ddd" }}>카페 상세 페이지에서 ♥ 버튼을 눌러보세요</div>
+            <div style={{ fontSize: 52, marginBottom: 14 }}>🤍</div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: "#bbb", marginBottom: 6 }}>아직 즐겨찾기가 없어요</div>
+            <div style={{ fontSize: 13, color: "#ddd" }}>카페 상세 페이지에서 ♡ 버튼을 눌러보세요</div>
           </div>
         ) : (
           favCafes.map((cafe, i) => (
@@ -212,8 +347,10 @@ function FavoritesScreen({ cafes, favorites, onSelectCafe, onToggleFavorite, onC
               cursor: "pointer"
             }} onClick={() => { onSelectCafe(cafe); onClose(); }}>
               <div style={{
-                width: 56, height: 56, borderRadius: 12, background: PURPLE_LIGHT,
-                flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24
+                width: 52, height: 52, borderRadius: 14,
+                background: CARD_GRADIENTS[i % CARD_GRADIENTS.length],
+                flexShrink: 0, display: "flex", alignItems: "center",
+                justifyContent: "center", fontSize: 22
               }}>☕</div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 3 }}>
@@ -224,7 +361,7 @@ function FavoritesScreen({ cafes, favorites, onSelectCafe, onToggleFavorite, onC
                     ♥
                   </button>
                 </div>
-                <div style={{ fontSize: 12, color: "#aaa", marginBottom: 7, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{cafe.address}</div>
+                <div style={{ fontSize: 12, color: "#bbb", marginBottom: 7, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{cafe.address}</div>
                 <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
                   {[cafe.tags.콘센트, cafe.tags.분위기, cafe.tags.소음].filter(Boolean).map(t => (
                     <TagChip key={t} label={t} selected size="sm" />
@@ -240,51 +377,68 @@ function FavoritesScreen({ cafes, favorites, onSelectCafe, onToggleFavorite, onC
 }
 
 // ===================== CAFE PREVIEW CARD =====================
-function CafePreviewCard({ cafe, onOpen, onClose, isFavorite, onToggleFavorite }) {
+function CafePreviewCard({ cafe, cafeIndex, onOpen, onClose, isFavorite, onToggleFavorite }) {
   const topTags = [cafe.tags.콘센트, cafe.tags.분위기, cafe.tags.소음].filter(Boolean);
+  const gradient = CARD_GRADIENTS[cafeIndex % CARD_GRADIENTS.length];
   return (
     <div style={{
-      position: "absolute", bottom: 76, left: 12, right: 12, zIndex: 900,
-      background: "#fff", borderRadius: 18, padding: "16px",
-      boxShadow: "0 6px 28px rgba(0,0,0,0.14)",
+      position: "absolute", bottom: 82, left: 12, right: 12, zIndex: 900,
+      background: "#fff", borderRadius: 20, overflow: "hidden",
+      boxShadow: "0 8px 32px rgba(0,0,0,0.16)",
       animation: "slideUp 0.25s ease"
     }}>
-      <button onClick={onClose} style={{
-        position: "absolute", top: 12, right: 12,
-        background: "#f5f5f5", border: "none", borderRadius: "50%",
-        width: 28, height: 28, cursor: "pointer", fontSize: 14,
-        display: "flex", alignItems: "center", justifyContent: "center", color: "#888"
-      }}>✕</button>
-      <button onClick={e => { e.stopPropagation(); onToggleFavorite(cafe.id); }} style={{
-        position: "absolute", top: 12, right: 48,
-        background: "#f5f5f5", border: "none", borderRadius: "50%",
-        width: 28, height: 28, cursor: "pointer", fontSize: 15,
-        display: "flex", alignItems: "center", justifyContent: "center"
-      }}>{isFavorite ? "♥" : "♡"}</button>
-      <div onClick={onOpen} style={{ cursor: "pointer", display: "flex", gap: 12 }}>
-        <div style={{
-          width: 60, height: 60, borderRadius: 12,
-          background: PURPLE_LIGHT, flexShrink: 0,
-          display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26
-        }}>☕</div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
-            <span style={{ fontWeight: 700, fontSize: 16, color: "#1a1a1a" }}>{cafe.name}</span>
-            <Stars rating={cafe.rating} />
-          </div>
-          <div style={{ fontSize: 12, color: "#999", marginBottom: 8, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{cafe.address}</div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
-            {topTags.map(t => <TagChip key={t} label={t} selected size="sm" />)}
+      {/* 상단 컬러 배너 */}
+      <div style={{
+        height: 6, background: gradient.replace("linear-gradient(135deg,", "linear-gradient(90deg,")
+      }} />
+      <div style={{ padding: "14px 16px 16px" }}>
+        <button onClick={onClose} style={{
+          position: "absolute", top: 14, right: 48,
+          background: "#f5f5f7", border: "none", borderRadius: "50%",
+          width: 28, height: 28, cursor: "pointer", fontSize: 12,
+          display: "flex", alignItems: "center", justifyContent: "center", color: "#999"
+        }}>✕</button>
+        <button onClick={e => { e.stopPropagation(); onToggleFavorite(cafe.id); }} style={{
+          position: "absolute", top: 14, right: 14,
+          background: isFavorite ? "#FFF0F3" : "#f5f5f7",
+          border: isFavorite ? "1px solid #FECDD3" : "none",
+          borderRadius: "50%", width: 28, height: 28,
+          cursor: "pointer", fontSize: 15,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          color: isFavorite ? "#FF4B6E" : "#ccc"
+        }}>{isFavorite ? "♥" : "♡"}</button>
+
+        <div onClick={onOpen} style={{ cursor: "pointer", display: "flex", gap: 12 }}>
+          <div style={{
+            width: 58, height: 58, borderRadius: 14,
+            background: gradient, flexShrink: 0,
+            display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26
+          }}>☕</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
+              <span style={{ fontWeight: 800, fontSize: 16, color: "#1a1a1a" }}>{cafe.name}</span>
+              <Stars rating={cafe.rating} />
+            </div>
+            {cafe.nearStation && (
+              <div style={{ fontSize: 11, color: PURPLE_DARK, fontWeight: 600, marginBottom: 5 }}>
+                🚇 {cafe.nearStation} 인근
+              </div>
+            )}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+              {topTags.map(t => <TagChip key={t} label={t} selected size="sm" />)}
+            </div>
           </div>
         </div>
+
+        {cafe.naverLink && (
+          <a href={cafe.naverLink} target="_blank" rel="noopener noreferrer" style={{
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+            marginTop: 12, textAlign: "center",
+            color: PURPLE_DARK, fontSize: 13, fontWeight: 600, textDecoration: "none",
+            padding: "9px", background: PURPLE_LIGHT, borderRadius: 12
+          }}>🗺️ 네이버 지도에서 보기 →</a>
+        )}
       </div>
-      {cafe.naverLink && (
-        <a href={cafe.naverLink} target="_blank" rel="noopener noreferrer" style={{
-          display: "block", marginTop: 12, textAlign: "center",
-          color: PURPLE, fontSize: 13, fontWeight: 500, textDecoration: "none",
-          padding: "8px", background: PURPLE_LIGHT, borderRadius: 10
-        }}>네이버 지도에서 보기 →</a>
-      )}
     </div>
   );
 }
@@ -292,84 +446,120 @@ function CafePreviewCard({ cafe, onOpen, onClose, isFavorite, onToggleFavorite }
 // ===================== CAFE LIST PANEL =====================
 function CafeListPanel({ cafes, onSelectCafe, filterCount, searchQuery }) {
   const [expanded, setExpanded] = useState(false);
+  const [sortBy, setSortBy] = useState("default");
   const listRef = useRef(null);
 
-  // 필터나 검색 결과 있을 때 자동 펼치기
   useEffect(() => {
     if (filterCount > 0 || searchQuery) setExpanded(true);
     else setExpanded(false);
   }, [filterCount, searchQuery]);
 
-  const collapsedHeight = 64;
-  const expandedHeight = "55vh";
+  const sortedCafes = [...cafes].sort((a, b) => {
+    if (sortBy === "rating") return (b.rating || 0) - (a.rating || 0);
+    return 0;
+  });
 
   return (
     <div style={{
       position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 850,
       background: "#fff",
-      borderRadius: expanded ? "20px 20px 0 0" : "20px 20px 0 0",
-      boxShadow: "0 -4px 20px rgba(0,0,0,0.10)",
+      borderRadius: "20px 20px 0 0",
+      boxShadow: "0 -4px 24px rgba(0,0,0,0.10)",
       transition: "height 0.35s cubic-bezier(0.4,0,0.2,1)",
-      height: expanded ? expandedHeight : collapsedHeight,
+      height: expanded ? "55vh" : 68,
       display: "flex", flexDirection: "column", overflow: "hidden"
     }}>
-      {/* 드래그 핸들 + 헤더 */}
+      {/* 핸들 + 헤더 */}
       <div
         onClick={() => setExpanded(e => !e)}
-        style={{
-          padding: "12px 20px 10px", cursor: "pointer", flexShrink: 0,
-          display: "flex", alignItems: "center", justifyContent: "space-between"
-        }}>
+        style={{ padding: "12px 18px 10px", cursor: "pointer", flexShrink: 0 }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
-          <div style={{ width: 36, height: 4, borderRadius: 2, background: "#e0e0e0", marginBottom: 10 }} />
+          <div style={{ width: 32, height: 4, borderRadius: 2, background: "#E5E3F5", marginBottom: 10 }} />
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
-            <span style={{ fontSize: 15, fontWeight: 700, color: "#1a1a1a" }}>
-              카공카페
-              <span style={{ color: PURPLE, marginLeft: 6 }}>{cafes.length}</span>
-              <span style={{ fontSize: 13, fontWeight: 400, color: "#999", marginLeft: 4 }}>곳</span>
-            </span>
-            <span style={{ fontSize: 13, color: "#aaa", transition: "transform 0.3s", display: "inline-block", transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }}>▲</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 15, fontWeight: 800, color: "#1a1a1a" }}>카공카페</span>
+              <span style={{
+                background: PURPLE_LIGHT, color: PURPLE_DARK,
+                borderRadius: 20, padding: "2px 10px",
+                fontSize: 12, fontWeight: 700
+              }}>{cafes.length}곳</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              {expanded && (
+                <select
+                  value={sortBy}
+                  onChange={e => { e.stopPropagation(); setSortBy(e.target.value); }}
+                  onClick={e => e.stopPropagation()}
+                  style={{
+                    fontSize: 11, color: "#888", background: "#f5f5f7",
+                    border: "none", borderRadius: 8, padding: "4px 8px",
+                    fontFamily: "inherit", cursor: "pointer", outline: "none"
+                  }}>
+                  <option value="default">기본순</option>
+                  <option value="rating">별점순</option>
+                </select>
+              )}
+              <span style={{
+                fontSize: 13, color: "#bbb", transition: "transform 0.3s",
+                display: "inline-block", transform: expanded ? "rotate(180deg)" : "rotate(0deg)"
+              }}>▲</span>
+            </div>
           </div>
         </div>
       </div>
 
       {/* 리스트 */}
-      <div ref={listRef} style={{ overflowY: "auto", flex: 1, padding: "0 16px 24px" }} className="no-scroll">
-        {cafes.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "32px 0", color: "#ccc" }}>
-            <div style={{ fontSize: 32, marginBottom: 8 }}>🔍</div>
-            <div style={{ fontSize: 14 }}>조건에 맞는 카페가 없어요</div>
+      <div ref={listRef} style={{ overflowY: "auto", flex: 1, padding: "0 16px 32px" }} className="no-scroll">
+        {sortedCafes.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "36px 0", color: "#ccc" }}>
+            <div style={{ fontSize: 36, marginBottom: 10 }}>🔍</div>
+            <div style={{ fontSize: 14, fontWeight: 600 }}>조건에 맞는 카페가 없어요</div>
           </div>
         ) : (
-          cafes.map((cafe, i) => (
+          sortedCafes.map((cafe, i) => (
             <div
               key={cafe.id}
               onClick={() => { onSelectCafe(cafe); setExpanded(false); }}
               style={{
                 display: "flex", gap: 12, alignItems: "flex-start",
-                padding: "12px 0",
-                borderBottom: i < cafes.length - 1 ? "1px solid #f5f5f5" : "none",
+                padding: "13px 0",
+                borderBottom: i < sortedCafes.length - 1 ? "1px solid #f0f0f4" : "none",
                 cursor: "pointer"
               }}>
-              {/* 아이콘 */}
+              {/* 썸네일 */}
               <div style={{
-                width: 52, height: 52, borderRadius: 12, background: PURPLE_LIGHT,
-                flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22
-              }}>☕</div>
+                width: 50, height: 50, borderRadius: 13,
+                background: CARD_GRADIENTS[i % CARD_GRADIENTS.length],
+                flexShrink: 0, display: "flex", alignItems: "center",
+                justifyContent: "center", fontSize: 22, position: "relative"
+              }}>
+                ☕
+                {cafe.rating >= 4.8 && (
+                  <div style={{
+                    position: "absolute", bottom: -2, right: -2,
+                    width: 14, height: 14, background: "#FFB800",
+                    borderRadius: "50%", border: "1.5px solid #fff",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 7, fontWeight: 800, color: "#fff"
+                  }}>★</div>
+                )}
+              </div>
               {/* 정보 */}
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
-                  <span style={{ fontWeight: 700, fontSize: 15, color: "#1a1a1a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{cafe.name}</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 3 }}>
+                  <span style={{ fontWeight: 700, fontSize: 14, color: "#1a1a1a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{cafe.name}</span>
                   <Stars rating={cafe.rating} />
                 </div>
-                <div style={{ fontSize: 12, color: "#aaa", marginBottom: 7, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{cafe.address}</div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+                <div style={{ fontSize: 11, color: "#bbb", marginBottom: 6, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {cafe.nearStation ? `🚇 ${cafe.nearStation} · ` : ""}{cafe.address}
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
                   {[cafe.tags.콘센트, cafe.tags.분위기, cafe.tags.소음].filter(Boolean).map(t => (
                     <TagChip key={t} label={t} selected size="sm" />
                   ))}
                 </div>
               </div>
-              <span style={{ fontSize: 18, color: "#ddd", flexShrink: 0, alignSelf: "center" }}>›</span>
+              <span style={{ fontSize: 16, color: "#d0cde8", flexShrink: 0, alignSelf: "center" }}>›</span>
             </div>
           ))
         )}
@@ -397,25 +587,37 @@ function FilterModal({ activeFilters, onApply, onClose }) {
     <div style={{ position: "absolute", inset: 0, zIndex: 2000, display: "flex", flexDirection: "column" }}>
       <div style={{ flex: 1, background: "rgba(0,0,0,0.45)", animation: "fadeIn 0.2s" }} onClick={onClose} />
       <div style={{
-        background: "#fff", borderRadius: "22px 22px 0 0",
+        background: "#fff", borderRadius: "24px 24px 0 0",
         maxHeight: "82vh", display: "flex", flexDirection: "column",
         animation: "slideUpFull 0.3s ease"
       }}>
         <div style={{ padding: "20px 20px 0" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-            <span style={{ fontSize: 19, fontWeight: 700 }}>필터</span>
+            <span style={{ fontSize: 19, fontWeight: 800, color: "#1a1a1a" }}>필터</span>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               {totalSelected > 0 && (
-                <button onClick={reset} style={{ background: "none", border: "none", cursor: "pointer", color: "#999", fontSize: 13, fontFamily: "inherit" }}>초기화</button>
+                <button onClick={reset} style={{
+                  background: PURPLE_LIGHT, border: "none", cursor: "pointer",
+                  color: PURPLE_DARK, fontSize: 13, fontWeight: 600,
+                  fontFamily: "inherit", borderRadius: 8, padding: "5px 12px"
+                }}>초기화</button>
               )}
-              <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "#555", fontSize: 20, lineHeight: 1, padding: 4 }}>✕</button>
+              <button onClick={onClose} style={{
+                background: "#f5f5f7", border: "none", cursor: "pointer",
+                color: "#555", fontSize: 18, lineHeight: 1, padding: 0,
+                width: 32, height: 32, borderRadius: "50%",
+                display: "flex", alignItems: "center", justifyContent: "center"
+              }}>✕</button>
             </div>
           </div>
         </div>
         <div style={{ overflowY: "auto", flex: 1, padding: "0 20px" }} className="no-scroll">
           {Object.entries(FILTER_CATEGORIES).map(([cat, tags]) => (
-            <div key={cat} style={{ marginBottom: 22 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#222", marginBottom: 10 }}>{cat}</div>
+            <div key={cat} style={{ marginBottom: 24 }}>
+              <div style={{
+                fontSize: 13, fontWeight: 700, color: "#888",
+                marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.05em"
+              }}>{cat}</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                 {tags.map(tag => <TagChip key={tag} label={tag} selected={isOn(cat, tag)} onClick={() => toggle(cat, tag)} />)}
               </div>
@@ -423,11 +625,14 @@ function FilterModal({ activeFilters, onApply, onClose }) {
           ))}
           <div style={{ height: 8 }} />
         </div>
-        <div style={{ padding: "14px 20px 36px" }}>
+        <div style={{ padding: "14px 20px 40px" }}>
           <button onClick={() => onApply(local)} style={{
-            width: "100%", padding: "15px", background: PURPLE, color: "#fff",
-            border: "none", borderRadius: 14, fontSize: 16, fontWeight: 700,
-            cursor: "pointer", fontFamily: "inherit"
+            width: "100%", padding: "16px",
+            background: totalSelected > 0 ? PURPLE_DARK : PURPLE,
+            color: "#fff", border: "none", borderRadius: 16,
+            fontSize: 16, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+            boxShadow: "0 4px 14px rgba(91,79,199,0.4)",
+            transition: "all 0.15s"
           }}>
             {totalSelected > 0 ? `필터 적용 (${totalSelected})` : "적용하기"}
           </button>
@@ -438,7 +643,8 @@ function FilterModal({ activeFilters, onApply, onClose }) {
 }
 
 // ===================== CAFE DETAIL =====================
-function CafeDetail({ cafe, onBack, onWriteReview, onLike, likedReviews, isFavorite, onToggleFavorite }) {  const tagRows = [
+function CafeDetail({ cafe, cafeIndex, onBack, onWriteReview, onLike, likedReviews, isFavorite, onToggleFavorite }) {
+  const tagRows = [
     { label: "콘센트", val: cafe.tags.콘센트 },
     { label: "분위기", val: cafe.tags.분위기 },
     { label: "소음", val: cafe.tags.소음 },
@@ -448,6 +654,7 @@ function CafeDetail({ cafe, onBack, onWriteReview, onLike, likedReviews, isFavor
     { label: "테이블", val: cafe.tags.테이블 },
     { label: "메뉴", val: cafe.tags.메뉴 },
   ].filter(r => r.val && r.val.length > 0);
+  const gradient = CARD_GRADIENTS[cafeIndex % CARD_GRADIENTS.length];
 
   return (
     <div style={{
@@ -455,63 +662,80 @@ function CafeDetail({ cafe, onBack, onWriteReview, onLike, likedReviews, isFavor
       zIndex: 1500, overflowY: "auto", animation: "slideInRight 0.28s ease"
     }} className="no-scroll">
       {/* Hero */}
-      <div style={{ position: "relative", width: "100%", height: 200, background: PURPLE_LIGHT, flexShrink: 0 }}>
-        <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 52, color: "#c4b8f0" }}>☕</div>
+      <div style={{ position: "relative", width: "100%", height: 200, background: gradient, flexShrink: 0 }}>
+        <div style={{
+          width: "100%", height: "100%",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 64, opacity: 0.6
+        }}>☕</div>
+        {/* 그라디언트 오버레이 */}
+        <div style={{
+          position: "absolute", inset: 0,
+          background: "linear-gradient(to top, rgba(255,255,255,0.6) 0%, transparent 60%)"
+        }} />
         <button onClick={onBack} style={{
-          position: "absolute", top: 16, left: 16, width: 36, height: 36,
-          borderRadius: "50%", background: "rgba(255,255,255,0.95)", border: "none",
-          cursor: "pointer", fontSize: 17, boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+          position: "absolute", top: 16, left: 16, width: 38, height: 38,
+          borderRadius: "50%", background: "rgba(255,255,255,0.9)", border: "none",
+          cursor: "pointer", fontSize: 18, boxShadow: "0 2px 12px rgba(0,0,0,0.15)",
           display: "flex", alignItems: "center", justifyContent: "center"
         }}>←</button>
         <button onClick={() => onToggleFavorite(cafe.id)} style={{
-          position: "absolute", top: 16, right: 16, width: 36, height: 36,
-          borderRadius: "50%", background: "rgba(255,255,255,0.95)", border: "none",
-          cursor: "pointer", fontSize: 18, boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+          position: "absolute", top: 16, right: 16, width: 38, height: 38,
+          borderRadius: "50%", background: isFavorite ? "#FFF0F3" : "rgba(255,255,255,0.9)",
+          border: isFavorite ? "1.5px solid #FECDD3" : "none",
+          cursor: "pointer", fontSize: 19, boxShadow: "0 2px 12px rgba(0,0,0,0.15)",
           display: "flex", alignItems: "center", justifyContent: "center",
           color: isFavorite ? "#FF4B6E" : "#ccc"
         }}>{isFavorite ? "♥" : "♡"}</button>
       </div>
 
       <div style={{ padding: "20px 20px 100px" }}>
-        {/* Title */}
+        {/* 제목 */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 4 }}>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: "#1a1a1a" }}>{cafe.name}</h1>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.3px" }}>{cafe.name}</h1>
           <Stars rating={cafe.rating} />
         </div>
-        <p style={{ fontSize: 13, color: "#999", marginBottom: 6 }}>{cafe.address}</p>
-        {cafe.nearStation && <p style={{ fontSize: 12, color: PURPLE, marginBottom: 14, fontWeight: 500 }}>🚇 {cafe.nearStation} 인근</p>}
-        {!cafe.nearStation && <div style={{ marginBottom: 14 }} />}
+        <p style={{ fontSize: 13, color: "#bbb", marginBottom: 5 }}>{cafe.address}</p>
+        {cafe.nearStation && (
+          <p style={{ fontSize: 12, color: PURPLE_DARK, marginBottom: 16, fontWeight: 600 }}>🚇 {cafe.nearStation} 인근</p>
+        )}
+        {!cafe.nearStation && <div style={{ marginBottom: 16 }} />}
 
-        {/* Naver link */}
+        {/* 네이버 링크 */}
         {cafe.naverLink && (
           <a href={cafe.naverLink} target="_blank" rel="noopener noreferrer" style={{
             display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-            padding: "10px", background: PURPLE_LIGHT, borderRadius: 12,
-            color: PURPLE, fontSize: 14, fontWeight: 600, textDecoration: "none", marginBottom: 8
+            padding: "11px", background: PURPLE_LIGHT, borderRadius: 14,
+            color: PURPLE_DARK, fontSize: 14, fontWeight: 700,
+            textDecoration: "none", marginBottom: 16
           }}>
             🗺️ 네이버 지도에서 보기
           </a>
         )}
 
-        {/* Owner comment */}
+        {/* 주인장 코멘트 */}
         <div style={{
-          background: "#fafafa", borderRadius: 14, padding: "14px 16px",
-          marginBottom: 22, borderLeft: `4px solid ${PURPLE}`
+          background: "#fafafe", borderRadius: 14, padding: "14px 16px",
+          marginBottom: 22, borderLeft: `3px solid ${PURPLE}`
         }}>
-          <p style={{ fontSize: 13, color: "#555", lineHeight: 1.7 }}>"{cafe.ownerComment}"</p>
+          <div style={{ fontSize: 11, fontWeight: 700, color: PURPLE_MID, marginBottom: 6, letterSpacing: "0.03em" }}>OWNER'S NOTE</div>
+          <p style={{ fontSize: 13, color: "#555", lineHeight: 1.75 }}>"{cafe.ownerComment}"</p>
         </div>
 
-        {/* Tags */}
-        <div style={{ marginBottom: 20 }}>
+        {/* 태그 섹션 */}
+        <div style={{
+          background: "#f9f9fb", borderRadius: 16, padding: "16px",
+          marginBottom: 20
+        }}>
           {tagRows.map(({ label, val }) => (
             <div key={label} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
-              <span style={{ fontSize: 13, color: "#aaa", width: 42, flexShrink: 0 }}>{label}</span>
+              <span style={{ fontSize: 12, color: "#bbb", width: 44, flexShrink: 0, fontWeight: 600 }}>{label}</span>
               <TagChip label={val} selected size="sm" />
             </div>
           ))}
           {tagArrayRows.map(({ label, val }) => (
             <div key={label} style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 10 }}>
-              <span style={{ fontSize: 13, color: "#aaa", width: 42, flexShrink: 0, paddingTop: 5 }}>{label}</span>
+              <span style={{ fontSize: 12, color: "#bbb", width: 44, flexShrink: 0, fontWeight: 600, paddingTop: 5 }}>{label}</span>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                 {val.map(t => <TagChip key={t} label={t} selected size="sm" />)}
               </div>
@@ -519,44 +743,45 @@ function CafeDetail({ cafe, onBack, onWriteReview, onLike, likedReviews, isFavor
           ))}
         </div>
 
-        <div style={{ height: 1, background: "#f0f0f0", margin: "20px 0" }} />
+        <div style={{ height: 1, background: "#f0f0f4", margin: "20px 0" }} />
 
-        {/* 오늘도 카공중인 주인장 리뷰 */}
+        {/* 주인장 리뷰 */}
         {cafe.reviews.filter(r => r.isOwner).map((rev, i) => (
           <div key={`owner-${i}`} style={{ marginBottom: 22 }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "#1a1a1a", marginBottom: 12 }}>오늘도 카공중인 주인장 리뷰</div>
+            <div style={{ fontSize: 14, fontWeight: 800, color: "#1a1a1a", marginBottom: 12 }}>오늘도 카공중인 주인장 리뷰</div>
             <div style={{
-              background: "#fafafa", borderRadius: 14, padding: "16px",
+              background: "#fafafe", borderRadius: 14, padding: "16px",
               display: "flex", gap: 12, alignItems: "flex-start"
             }}>
               <div style={{
-                width: 40, height: 40, borderRadius: "50%",
+                width: 38, height: 38, borderRadius: "50%",
                 background: PURPLE_LIGHT, flexShrink: 0,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 18
+                display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17
               }}>☕</div>
-              <p style={{ fontSize: 14, color: "#444", lineHeight: 1.7 }}>{rev.text}</p>
+              <p style={{ fontSize: 14, color: "#444", lineHeight: 1.75 }}>{rev.text}</p>
             </div>
           </div>
         ))}
 
-        <div style={{ height: 1, background: "#f0f0f0", margin: "4px 0 20px" }} />
+        <div style={{ height: 1, background: "#f0f0f4", margin: "4px 0 20px" }} />
 
-        {/* 카공중인 사람들의 리뷰 */}
+        {/* 유저 리뷰 헤더 */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <span style={{ fontSize: 15, fontWeight: 700 }}>
-            오늘도 카공중인 사람들의 리뷰 <span style={{ color: PURPLE }}>{cafe.reviews.filter(r => !r.isOwner).length}</span>
+          <span style={{ fontSize: 14, fontWeight: 800, color: "#1a1a1a" }}>
+            카공러들의 리뷰
+            <span style={{ color: PURPLE_DARK, marginLeft: 6 }}>{cafe.reviews.filter(r => !r.isOwner).length}</span>
           </span>
           <button onClick={onWriteReview} style={{
-            background: PURPLE, color: "#fff", border: "none",
-            borderRadius: 8, padding: "7px 14px", fontSize: 13, fontWeight: 600,
-            cursor: "pointer", fontFamily: "inherit"
+            background: PURPLE_DARK, color: "#fff", border: "none",
+            borderRadius: 10, padding: "7px 15px", fontSize: 13, fontWeight: 700,
+            cursor: "pointer", fontFamily: "inherit",
+            boxShadow: "0 2px 8px rgba(91,79,199,0.35)"
           }}>리뷰 쓰기</button>
         </div>
 
         {cafe.reviews.filter(r => !r.isOwner).length === 0 && (
-          <div style={{ textAlign: "center", padding: "32px 0", color: "#ccc", fontSize: 14 }}>
-            <div style={{ fontSize: 32, marginBottom: 8 }}>☕</div>
+          <div style={{ textAlign: "center", padding: "36px 0", color: "#ccc", fontSize: 14 }}>
+            <div style={{ fontSize: 36, marginBottom: 10 }}>☕</div>
             첫 번째 리뷰를 남겨보세요!
           </div>
         )}
@@ -564,21 +789,29 @@ function CafeDetail({ cafe, onBack, onWriteReview, onLike, likedReviews, isFavor
         {cafe.reviews.filter(r => !r.isOwner).map((rev, i, arr) => (
           <div key={i} style={{ paddingBottom: 20, marginBottom: 20, borderBottom: i < arr.length - 1 ? "1px solid #f5f5f5" : "none" }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-              <span style={{ fontSize: 14, fontWeight: 600 }}>{rev.user}</span>
+              <span style={{ fontSize: 14, fontWeight: 700, color: "#1a1a1a" }}>{rev.user}</span>
               <span style={{ fontSize: 12, color: "#bbb" }}>{rev.date}</span>
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 9 }}>
               {rev.tags.map(t => <TagChip key={t} label={t} selected size="sm" />)}
-              {rev.extra > 0 && <span style={{ fontSize: 12, color: PURPLE, border: `1.5px solid ${PURPLE}`, borderRadius: 20, padding: "4px 8px", fontWeight: 500 }}>+{rev.extra}</span>}
+              {rev.extra > 0 && (
+                <span style={{
+                  fontSize: 11, color: PURPLE_DARK,
+                  border: `1.5px solid ${PURPLE_LIGHT}`, borderRadius: 20,
+                  padding: "3px 8px", fontWeight: 600
+                }}>+{rev.extra}</span>
+              )}
             </div>
-            <p style={{ fontSize: 14, color: "#444", lineHeight: 1.65, marginBottom: 10 }}>{rev.text}</p>
+            <p style={{ fontSize: 14, color: "#444", lineHeight: 1.7, marginBottom: 10 }}>{rev.text}</p>
             <button onClick={() => onLike(cafe.id, i)} style={{
-              display: "flex", alignItems: "center", gap: 4, background: "none", border: "none",
-              cursor: "pointer", fontSize: 13, fontFamily: "inherit", padding: 0,
-              color: likedReviews[`${cafe.id}-${i}`] ? PURPLE : "#bbb"
+              display: "flex", alignItems: "center", gap: 5,
+              background: likedReviews[`${cafe.id}-${i}`] ? PURPLE_LIGHT : "#f5f5f7",
+              border: "none", borderRadius: 20, cursor: "pointer",
+              fontSize: 12, fontFamily: "inherit", padding: "5px 10px",
+              color: likedReviews[`${cafe.id}-${i}`] ? PURPLE_DARK : "#bbb",
+              fontWeight: 600, transition: "all 0.15s"
             }}>
-              <span style={{ fontSize: 15 }}>👍</span>
-              {(rev.likes || 0) + (likedReviews[`${cafe.id}-${i}`] ? 1 : 0)}
+              👍 {(rev.likes || 0) + (likedReviews[`${cafe.id}-${i}`] ? 1 : 0)}
             </button>
           </div>
         ))}
@@ -613,80 +846,92 @@ function WriteReview({ cafe, onBack, onSubmit }) {
     return (
       <div style={{
         position: "absolute", inset: 0, background: "#fff", zIndex: 2000,
-        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14,
-        animation: "fadeIn 0.3s"
+        display: "flex", flexDirection: "column", alignItems: "center",
+        justifyContent: "center", gap: 14, animation: "fadeIn 0.3s"
       }}>
-        <div style={{ fontSize: 56 }}>🎉</div>
-        <div style={{ fontSize: 20, fontWeight: 700 }}>리뷰가 등록되었어요!</div>
-        <div style={{ fontSize: 14, color: "#999" }}>소중한 카공 후기 감사합니다 ☕</div>
+        <div style={{ fontSize: 60 }}>🎉</div>
+        <div style={{ fontSize: 20, fontWeight: 800, color: "#1a1a1a" }}>리뷰가 등록됐어요!</div>
+        <div style={{ fontSize: 14, color: "#bbb" }}>소중한 카공 후기 감사합니다 ☕</div>
       </div>
     );
   }
 
   return (
-    <div style={{ position: "absolute", inset: 0, background: "#fff", zIndex: 2000, overflowY: "auto", animation: "slideInRight 0.28s ease" }} className="no-scroll">
+    <div style={{
+      position: "absolute", inset: 0, background: "#fff",
+      zIndex: 2000, overflowY: "auto", animation: "slideInRight 0.28s ease"
+    }} className="no-scroll">
       <div style={{
-        display: "flex", alignItems: "center", gap: 12, padding: "16px 20px",
-        borderBottom: "1px solid #f0f0f0", position: "sticky", top: 0, background: "#fff", zIndex: 10
+        display: "flex", alignItems: "center", gap: 12,
+        padding: "18px 20px 16px",
+        borderBottom: "1px solid #f0f0f4",
+        position: "sticky", top: 0, background: "#fff", zIndex: 10
       }}>
-        <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 18, padding: 0, color: "#333" }}>←</button>
-        <span style={{ fontSize: 17, fontWeight: 700 }}>리뷰 쓰기</span>
+        <button onClick={onBack} style={{
+          background: "#f5f5f7", border: "none", cursor: "pointer",
+          borderRadius: "50%", width: 34, height: 34, fontSize: 16,
+          display: "flex", alignItems: "center", justifyContent: "center", color: "#444"
+        }}>←</button>
+        <span style={{ fontSize: 17, fontWeight: 800 }}>리뷰 쓰기</span>
       </div>
 
       <div style={{ padding: "22px 20px 120px" }}>
-        <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>{cafe.name}</h2>
-        <p style={{ fontSize: 13, color: "#999", marginBottom: 24 }}>이 카페에 대한 솔직한 리뷰를 남겨주세요</p>
+        <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 4, color: "#1a1a1a" }}>{cafe.name}</h2>
+        <p style={{ fontSize: 13, color: "#bbb", marginBottom: 24 }}>이 카페에 대한 솔직한 리뷰를 남겨주세요 ☕</p>
 
-        <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>키워드 선택</div>
+        <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 16, color: "#1a1a1a" }}>키워드 선택</div>
         {Object.entries(FILTER_CATEGORIES).map(([cat, tags]) => (
           <div key={cat} style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: "#666", marginBottom: 10 }}>{cat}</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "#aaa", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.05em" }}>{cat}</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {tags.map(tag => <TagChip key={tag} label={tag} selected={isOn(cat, tag)} onClick={() => toggle(cat, tag)} />)}
             </div>
           </div>
         ))}
 
-        <div style={{ height: 1, background: "#f0f0f0", margin: "8px 0 22px" }} />
+        <div style={{ height: 1, background: "#f0f0f4", margin: "8px 0 22px" }} />
 
-        <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>한줄평</div>
+        <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 12, color: "#1a1a1a" }}>한줄평</div>
         <textarea
           value={text} onChange={e => setText(e.target.value)}
-          placeholder="한줄평을 입력하세요" maxLength={100}
+          placeholder="카공 경험을 자유롭게 적어주세요" maxLength={100}
           style={{
-            width: "100%", minHeight: 88, border: `1.5px solid ${PURPLE_LIGHT}`,
-            borderRadius: 12, padding: "12px 14px", fontSize: 14,
+            width: "100%", minHeight: 90,
+            border: `1.5px solid ${text ? PURPLE : "#E5E3F5"}`,
+            borderRadius: 14, padding: "12px 14px", fontSize: 14,
             fontFamily: "inherit", resize: "none", outline: "none",
-            color: "#333", background: "#fafafa", lineHeight: 1.65,
+            color: "#333", background: "#fafafe", lineHeight: 1.7,
             transition: "border-color 0.15s"
           }}
           onFocus={e => e.target.style.borderColor = PURPLE}
-          onBlur={e => e.target.style.borderColor = PURPLE_LIGHT}
+          onBlur={e => e.target.style.borderColor = text ? PURPLE : "#E5E3F5"}
         />
         <div style={{ textAlign: "right", fontSize: 12, color: "#ccc", marginTop: 4 }}>{text.length}/100</div>
 
-        <div style={{ fontSize: 15, fontWeight: 700, margin: "20px 0 12px" }}>
-          사진 첨부 <span style={{ fontSize: 13, color: "#bbb", fontWeight: 400 }}>(선택)</span>
+        <div style={{ fontSize: 14, fontWeight: 800, margin: "20px 0 12px", color: "#1a1a1a" }}>
+          사진 첨부 <span style={{ fontSize: 12, color: "#bbb", fontWeight: 400 }}>(선택)</span>
         </div>
         <div style={{
-          border: `2px dashed #d8d3f0`, borderRadius: 14, padding: "28px 20px",
-          textAlign: "center", color: "#c4b8f0", cursor: "pointer",
-          background: PURPLE_LIGHT
+          border: `2px dashed ${PURPLE_LIGHT}`, borderRadius: 16, padding: "28px 20px",
+          textAlign: "center", color: PURPLE_MID, cursor: "pointer",
+          background: "#fafafe"
         }}>
-          <div style={{ fontSize: 26, marginBottom: 6 }}>⬆</div>
-          <div style={{ fontSize: 13 }}>사진 추가</div>
+          <div style={{ fontSize: 28, marginBottom: 6 }}>⬆</div>
+          <div style={{ fontSize: 13, fontWeight: 600 }}>사진 추가</div>
         </div>
       </div>
 
       <div style={{
         position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)",
-        width: "100%", maxWidth: 480, padding: "12px 20px 32px", background: "#fff",
-        borderTop: "1px solid #f0f0f0"
+        width: "100%", maxWidth: 480, padding: "12px 20px 36px",
+        background: "#fff", borderTop: "1px solid #f0f0f4"
       }}>
         <button onClick={submit} style={{
-          width: "100%", padding: "15px", background: PURPLE, color: "#fff",
-          border: "none", borderRadius: 14, fontSize: 16, fontWeight: 700,
-          cursor: "pointer", fontFamily: "inherit"
+          width: "100%", padding: "15px",
+          background: PURPLE_DARK, color: "#fff",
+          border: "none", borderRadius: 16, fontSize: 16, fontWeight: 700,
+          cursor: "pointer", fontFamily: "inherit",
+          boxShadow: "0 4px 14px rgba(91,79,199,0.4)"
         }}>등록하기</button>
       </div>
     </div>
@@ -697,12 +942,12 @@ function WriteReview({ cafe, onBack, onSubmit }) {
 function App() {
   const [screen, setScreen] = useState("map");
   const [selectedCafe, setSelectedCafe] = useState(null);
+  const [selectedCafeIndex, setSelectedCafeIndex] = useState(0);
   const [showFilter, setShowFilter] = useState(false);
   const [activeFilters, setActiveFilters] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
   const [likedReviews, setLikedReviews] = useState({});
   const [cafes, setCafes] = useState(CAFES);
-  const [userLocation, setUserLocation] = useState(null);
   const [favorites, setFavorites] = useState(() => {
     try { return JSON.parse(localStorage.getItem('kagong_favorites') || '[]'); } catch { return []; }
   });
@@ -716,15 +961,15 @@ function App() {
     });
   };
 
-  // 현위치 취득
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        pos => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        () => {}
-      );
-    }
-  }, []);
+  // 퀵 필터 토글
+  const handleQuickFilterToggle = (cat, val) => {
+    setActiveFilters(prev => {
+      const arr = [...(prev[cat] || [])];
+      const idx = arr.indexOf(val);
+      if (idx >= 0) arr.splice(idx, 1); else arr.push(val);
+      return { ...prev, [cat]: arr };
+    });
+  };
 
   const filterCount = Object.values(activeFilters).flat().length;
 
@@ -743,7 +988,17 @@ function App() {
     return true;
   });
 
-  const handleMarkerClick = useCallback(cafe => setSelectedCafe(cafe), []);
+  const handleMarkerClick = useCallback(cafe => {
+    const idx = CAFES.findIndex(c => c.id === cafe.id);
+    setSelectedCafe(cafe);
+    setSelectedCafeIndex(idx >= 0 ? idx : 0);
+  }, []);
+
+  const handleSelectCafe = (cafe) => {
+    const idx = CAFES.findIndex(c => c.id === cafe.id);
+    setSelectedCafe(cafe);
+    setSelectedCafeIndex(idx >= 0 ? idx : 0);
+  };
 
   const handleApplyFilter = filters => {
     setActiveFilters(filters);
@@ -780,46 +1035,36 @@ function App() {
           <MapScreen cafes={filteredCafes} selectedCafe={selectedCafe} onMarkerClick={handleMarkerClick} />
         </div>
 
+        {/* 앱 헤더 */}
+        {screen === "map" && (
+          <AppHeader favorites={favorites} onFavoritesClick={() => setShowFavorites(true)} />
+        )}
+
         {/* 검색바 */}
         {screen === "map" && (
           <SearchBar query={searchQuery} onChange={setSearchQuery} onFilterClick={() => setShowFilter(true)} filterCount={filterCount} />
         )}
 
-        {/* 활성 필터 칩 */}
-        {screen === "map" && filterCount > 0 && (
-          <div style={{ position: "absolute", top: 68, left: 12, right: 12, zIndex: 999, display: "flex", gap: 6, flexWrap: "wrap" }}>
-            {Object.entries(activeFilters).flatMap(([cat, vals]) =>
-              (vals || []).map(v => (
-                <div key={`${cat}-${v}`} style={{
-                  background: PURPLE, color: "#fff", borderRadius: 20,
-                  padding: "4px 10px 4px 12px", fontSize: 12, fontWeight: 500,
-                  display: "flex", alignItems: "center", gap: 4,
-                  boxShadow: "0 1px 4px rgba(124,111,205,0.35)"
-                }}>
-                  {v}
-                  <button onClick={() => {
-                    setActiveFilters(prev => ({ ...prev, [cat]: (prev[cat] || []).filter(x => x !== v) }));
-                  }} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.8)", cursor: "pointer", padding: 0, fontSize: 12, lineHeight: 1 }}>✕</button>
-                </div>
-              ))
-            )}
-          </div>
+        {/* 퀵 필터 태그바 */}
+        {screen === "map" && (
+          <QuickFilterBar activeFilters={activeFilters} onToggle={handleQuickFilterToggle} />
         )}
 
-        {/* 카페 리스트 패널 - 지도 화면에서 항상 표시 */}
+        {/* 카페 리스트 패널 */}
         {screen === "map" && (
           <CafeListPanel
             cafes={filteredCafes}
-            onSelectCafe={(cafe) => { setSelectedCafe(cafe); }}
+            onSelectCafe={handleSelectCafe}
             filterCount={filterCount}
             searchQuery={searchQuery}
           />
         )}
 
-        {/* 카페 미리보기 카드 - 리스트 패널 위에 표시 */}
+        {/* 카페 미리보기 카드 */}
         {screen === "map" && selectedCafe && (
           <CafePreviewCard
             cafe={selectedCafe}
+            cafeIndex={selectedCafeIndex}
             onOpen={() => setScreen("detail")}
             onClose={() => setSelectedCafe(null)}
             isFavorite={favorites.includes(selectedCafe.id)}
@@ -827,46 +1072,22 @@ function App() {
           />
         )}
 
-
-
-        {/* 즐겨찾기 버튼 (지도 우상단) */}
-        {screen === "map" && (
-          <button
-            onClick={() => setShowFavorites(true)}
-            style={{
-              position: "absolute", top: 12, right: 96, zIndex: 1001,
-              width: 42, height: 42, borderRadius: "50%",
-              background: favorites.length > 0 ? "#FF4B6E" : "#fff",
-              border: "none", cursor: "pointer",
-              fontSize: 18, boxShadow: "0 2px 12px rgba(0,0,0,0.13)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              transition: "background 0.2s"
-            }}>
-            <span style={{ color: favorites.length > 0 ? "#fff" : "#FF4B6E" }}>♥</span>
-            {favorites.length > 0 && (
-              <span style={{
-                position: "absolute", top: -4, right: -4,
-                background: PURPLE, color: "#fff", borderRadius: "50%",
-                width: 17, height: 17, fontSize: 10, fontWeight: 700,
-                display: "flex", alignItems: "center", justifyContent: "center"
-              }}>{favorites.length}</span>
-            )}
-          </button>
-        )}
-
         {/* 즐겨찾기 화면 */}
         {showFavorites && (
           <FavoritesScreen
             cafes={cafes}
             favorites={favorites}
-            onSelectCafe={(cafe) => { setSelectedCafe(cafe); setScreen("detail"); setShowFavorites(false); }}
+            onSelectCafe={(cafe) => { handleSelectCafe(cafe); setScreen("detail"); setShowFavorites(false); }}
             onToggleFavorite={toggleFavorite}
             onClose={() => setShowFavorites(false)}
           />
         )}
+
+        {/* 카페 상세 */}
         {screen === "detail" && selectedCafe && (
           <CafeDetail
             cafe={cafes.find(c => c.id === selectedCafe.id) || selectedCafe}
+            cafeIndex={selectedCafeIndex}
             onBack={() => setScreen("map")}
             onWriteReview={() => setScreen("review")}
             onLike={handleLike}
