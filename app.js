@@ -66,15 +66,6 @@ function TagChip({ label, selected, onClick, size = "md" }) {
   );
 }
 
-function Stars({ rating }) {
-  if (!rating) return null;
-  return (
-    <span style={{ display: "flex", alignItems: "center", gap: 3 }}>
-      <span style={{ color: "#FFB800", fontSize: 12 }}>★</span>
-      <span style={{ fontSize: 12, fontWeight: 700, color: "#FFB800" }}>{rating.toFixed(1)}</span>
-    </span>
-  );
-}
 
 // ===================== MAP SCREEN =====================
 function MapScreen({ cafes, selectedCafe, onMarkerClick }) {
@@ -265,7 +256,6 @@ function CafePreviewCard({ cafe, cafeIndex, onOpen, onClose, isFavorite, onToggl
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
               <span style={{ fontWeight: 800, fontSize: 16, color: "#1a1a1a" }}>{cafe.name}</span>
-              <Stars rating={cafe.rating} />
             </div>
             {cafe.nearStation && <div style={{ fontSize: 11, color: PURPLE_DARK, fontWeight: 600, marginBottom: 5 }}>🚇 {cafe.nearStation} 인근</div>}
             <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>{topTags.map(t => <TagChip key={t} label={t} selected size="sm" />)}</div>
@@ -340,12 +330,10 @@ function CafeListPanel({ cafes, onSelectCafe, filterCount, searchQuery, favorite
               style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "13px 0", borderBottom: i < sortedCafes.length - 1 ? "1px solid #f0f0f4" : "none", cursor: "pointer" }}>
               <div style={{ width: 50, height: 50, borderRadius: 13, background: CARD_GRADIENTS[i % CARD_GRADIENTS.length], flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, position: "relative" }}>
                 ☕
-                {cafe.rating >= 4.8 && <div style={{ position: "absolute", bottom: -2, right: -2, width: 14, height: 14, background: "#FFB800", borderRadius: "50%", border: "1.5px solid #fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 7, fontWeight: 800, color: "#fff" }}>★</div>}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 3 }}>
                   <span style={{ fontWeight: 700, fontSize: 14, color: "#1a1a1a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{cafe.name}</span>
-                  <Stars rating={cafe.rating} />
                   {sortBy === "favorites" && favCounts[cafe.id] > 0 && (
                     <span style={{ fontSize: 11, color: "#FF4B6E", fontWeight: 700 }}>♥ {favCounts[cafe.id]}</span>
                   )}
@@ -488,7 +476,6 @@ function CafeDetail({ cafe, cafeIndex, onBack, onWriteReview, onLike, isFavorite
       <div style={{ padding: "20px 20px 100px" }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 4 }}>
           <h1 style={{ fontSize: 22, fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.3px" }}>{cafe.name}</h1>
-          <Stars rating={cafe.rating} />
         </div>
         <p style={{ fontSize: 13, color: "#bbb", marginBottom: 5 }}>{cafe.address}</p>
         {cafe.nearStation && <p style={{ fontSize: 12, color: PURPLE_DARK, marginBottom: 16, fontWeight: 600 }}>🚇 {cafe.nearStation} 인근</p>}
