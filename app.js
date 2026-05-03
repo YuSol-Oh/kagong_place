@@ -281,7 +281,7 @@ function CafePreviewCard({ cafe, cafeIndex, onOpen, onClose, isFavorite, onToggl
 }
 
 // ===================== CAFE LIST PANEL =====================
-function CafeListPanel({ cafes, onSelectCafe, filterCount, searchQuery }) {
+function CafeListPanel({ cafes, onSelectCafe, filterCount, searchQuery, favorites }) {
   const [expanded, setExpanded] = useState(false);
   const [sortBy, setSortBy] = useState("default");
   const listRef = useRef(null);
@@ -289,7 +289,14 @@ function CafeListPanel({ cafes, onSelectCafe, filterCount, searchQuery }) {
     if (filterCount > 0 || searchQuery) setExpanded(true);
     else setExpanded(false);
   }, [filterCount, searchQuery]);
-  const sortedCafes = [...cafes].sort((a, b) => sortBy === "rating" ? (b.rating || 0) - (a.rating || 0) : 0);
+  const sortedCafes = [...cafes].sort((a, b) => {
+    if (sortBy === "favorites") {
+      const aFav = favorites.includes(a.id) ? 1 : 0;
+      const bFav = favorites.includes(b.id) ? 1 : 0;
+      return bFav - aFav;
+    }
+    return 0;
+  });
   return (
     <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 850, background: "#fff", borderRadius: "20px 20px 0 0", boxShadow: "0 -4px 24px rgba(0,0,0,0.10)", transition: "height 0.35s cubic-bezier(0.4,0,0.2,1)", height: expanded ? "55vh" : 68, display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <div onClick={() => setExpanded(e => !e)} style={{ padding: "12px 18px 10px", cursor: "pointer", flexShrink: 0 }}>
@@ -305,7 +312,7 @@ function CafeListPanel({ cafes, onSelectCafe, filterCount, searchQuery }) {
                 <select value={sortBy} onChange={e => { e.stopPropagation(); setSortBy(e.target.value); }} onClick={e => e.stopPropagation()}
                   style={{ fontSize: 11, color: "#888", background: "#f5f5f7", border: "none", borderRadius: 8, padding: "4px 8px", fontFamily: "inherit", cursor: "pointer", outline: "none" }}>
                   <option value="default">기본순</option>
-                  <option value="rating">별점순</option>
+                  <option value="favorites">즐겨찾기순</option>
                 </select>
               )}
               <span style={{ fontSize: 13, color: "#bbb", transition: "transform 0.3s", display: "inline-block", transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }}>▲</span>
@@ -855,7 +862,7 @@ function App() {
         {screen === "map" && <AppHeader favorites={favorites} onFavoritesClick={() => setShowFavorites(true)} />}
         {screen === "map" && <SearchBar query={searchQuery} onChange={setSearchQuery} onFilterClick={() => setShowFilter(true)} filterCount={filterCount} />}
         {screen === "map" && <QuickFilterBar activeFilters={activeFilters} onToggle={handleQuickFilterToggle} onToggleMulti={handleQuickFilterMultiToggle} />}
-        {screen === "map" && <CafeListPanel cafes={filteredCafes} onSelectCafe={handleSelectCafe} filterCount={filterCount} searchQuery={searchQuery} />}
+        {screen === "map" && <CafeListPanel cafes={filteredCafes} onSelectCafe={handleSelectCafe} filterCount={filterCount} searchQuery={searchQuery} favorites={favorites} />}
         {screen === "map" && selectedCafe && (
           <CafePreviewCard cafe={selectedCafe} cafeIndex={selectedCafeIndex} onOpen={() => setScreen("detail")} onClose={() => setSelectedCafe(null)} isFavorite={favorites.includes(selectedCafe.id)} onToggleFavorite={toggleFavorite} />
         )}
