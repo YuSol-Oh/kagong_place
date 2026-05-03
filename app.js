@@ -429,18 +429,34 @@ function CafeDetail({ cafe, cafeIndex, onBack, onWriteReview, onLike, isFavorite
     finally { setDeletingId(null); }
   };
 
+  const [likedSet, setLikedSet] = useState(() => {
+    // 초기값: localStorage에서 이미 좋아요한 리뷰 ID 목록 로드
+    const keys = Object.keys(localStorage).filter(k => k.startsWith("liked_review_"));
+    return new Set(keys.map(k => k.replace("liked_review_", "")));
+  });
+
   const handleLikeReview = async (reviewId) => {
     const key = `liked_review_${reviewId}`;
-    if (localStorage.getItem(key)) return;
+    if (likedSet.has(String(reviewId))) return;
+    // 즉시 UI 반영 (낙관적 업데이트)
+    setLikedSet(prev => new Set([...prev, String(reviewId)]));
+    localStorage.setItem(key, "1");
     try {
       const res = await fetch(`${BACKEND_URL}/api/reviews/${reviewId}/like`, { method: "PATCH" });
       const data = await res.json();
       if (data.ok) {
-        localStorage.setItem(key, "1");
         setDbReviews(prev => prev.map(r => r.id === reviewId ? { ...r, likes: data.likes } : r));
         onLike(cafe.id, reviewId);
+      } else {
+        // 실패 시 롤백
+        setLikedSet(prev => { const next = new Set(prev); next.delete(String(reviewId)); return next; });
+        localStorage.removeItem(key);
       }
-    } catch (e) {}
+    } catch (e) {
+      // 실패 시 롤백
+      setLikedSet(prev => { const next = new Set(prev); next.delete(String(reviewId)); return next; });
+      localStorage.removeItem(key);
+    }
   };
 
   const ownerReviews = cafe.reviews.filter(r => r.isOwner);
@@ -535,7 +551,7 @@ function CafeDetail({ cafe, cafeIndex, onBack, onWriteReview, onLike, isFavorite
 
         {userReviews.map((rev, i, arr) => {
           const isMyReview = rev.session_id === SESSION_ID;
-          const isLiked = !!localStorage.getItem(`liked_review_${rev.id}`);
+          const isLiked = likedSet.has(String(rev.id));
           return (
             <div key={rev.id} style={{ paddingBottom: 20, marginBottom: 20, borderBottom: i < arr.length - 1 ? "1px solid #f5f5f5" : "none" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
