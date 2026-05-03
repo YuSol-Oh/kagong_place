@@ -67,6 +67,7 @@ function TagChip({ label, selected, onClick, size = "md" }) {
 }
 
 
+
 // ===================== MAP SCREEN =====================
 function MapScreen({ cafes, selectedCafe, onMarkerClick }) {
   const mapInstanceRef = useRef(null);
@@ -168,11 +169,9 @@ function SearchBar({ query, onChange, onFilterClick, filterCount }) {
 }
 
 // ===================== QUICK FILTER BAR =====================
-// 단일 태그 필터
 const QUICK_FILTERS_SINGLE = [
   { cat: "분위기", val: "카공러 다수", label: "카공러 다수" },
 ];
-// 복합 태그 필터 (버튼 하나로 여러 태그 동시 적용)
 const QUICK_FILTERS_MULTI = [
   { label: "콘센트 넉넉/거의 전좌석", tags: [{ cat: "콘센트", val: "넉넉함" }, { cat: "콘센트", val: "거의 전좌석" }] },
 ];
@@ -290,9 +289,7 @@ function CafeListPanel({ cafes, onSelectCafe, filterCount, searchQuery, favorite
   }, [filterCount, searchQuery]);
 
   const sortedCafes = [...cafes].sort((a, b) => {
-    if (sortBy === "favorites") {
-      return (favCounts[b.id] || 0) - (favCounts[a.id] || 0);
-    }
+    if (sortBy === "favorites") return (favCounts[b.id] || 0) - (favCounts[a.id] || 0);
     return 0;
   });
   return (
@@ -334,8 +331,8 @@ function CafeListPanel({ cafes, onSelectCafe, filterCount, searchQuery, favorite
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 3 }}>
                   <span style={{ fontWeight: 700, fontSize: 14, color: "#1a1a1a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{cafe.name}</span>
-                  {sortBy === "favorites" && favCounts[cafe.id] > 0 && (
-                    <span style={{ fontSize: 11, color: "#FF4B6E", fontWeight: 700 }}>♥ {favCounts[cafe.id]}</span>
+                  {favCounts[cafe.id] > 0 && (
+                    <span style={{ fontSize: 11, color: "#FF4B6E", fontWeight: 700, flexShrink: 0 }}>♥ {favCounts[cafe.id]}</span>
                   )}
                 </div>
                 <div style={{ fontSize: 11, color: "#bbb", marginBottom: 6, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{cafe.nearStation ? `🚇 ${cafe.nearStation} · ` : ""}{cafe.address}</div>
