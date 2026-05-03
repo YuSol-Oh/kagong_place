@@ -270,7 +270,7 @@ function CafePreviewCard({ cafe, cafeIndex, onOpen, onClose, isFavorite, onToggl
 }
 
 // ===================== CAFE LIST PANEL =====================
-function CafeListPanel({ cafes, onSelectCafe, filterCount, searchQuery, favorites }) {
+function CafeListPanel({ cafes, onSelectCafe, filterCount, searchQuery, favorites, userLocation }) {
   const [expanded, setExpanded] = useState(false);
   const [sortBy, setSortBy] = useState("default");
   const [favCounts, setFavCounts] = useState({});
@@ -288,8 +288,24 @@ function CafeListPanel({ cafes, onSelectCafe, filterCount, searchQuery, favorite
     else setExpanded(false);
   }, [filterCount, searchQuery]);
 
+  // 두 좌표 간 거리 계산 (km, Haversine 공식)
+  const getDistance = (lat1, lng1, lat2, lng2) => {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng/2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  };
+
+  const formatDistance = (km) => km < 1 ? `${Math.round(km * 1000)}m` : `${km.toFixed(1)}km`;
+
   const sortedCafes = [...cafes].sort((a, b) => {
     if (sortBy === "favorites") return (favCounts[b.id] || 0) - (favCounts[a.id] || 0);
+    if (sortBy === "distance" && userLocation) {
+      const dA = (a.lat && a.lng) ? getDistance(userLocation.lat, userLocation.lng, a.lat, a.lng) : 9999;
+      const dB = (b.lat && b.lng) ? getDistance(userLocation.lat, userLocation.lng, b.lat, b.lng) : 9999;
+      return dA - dB;
+    }
     return 0;
   });
   return (
@@ -308,6 +324,7 @@ function CafeListPanel({ cafes, onSelectCafe, filterCount, searchQuery, favorite
                   style={{ fontSize: 11, color: "#888", background: "#f5f5f7", border: "none", borderRadius: 8, padding: "4px 8px", fontFamily: "inherit", cursor: "pointer", outline: "none" }}>
                   <option value="default">기본순</option>
                   <option value="favorites">즐겨찾기순</option>
+                  <option value="distance" disabled={!userLocation}>{userLocation ? "거리순" : "거리순 (위치 필요)"}</option>
                 </select>
               )}
               <span style={{ fontSize: 13, color: "#bbb", transition: "transform 0.3s", display: "inline-block", transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }}>▲</span>
@@ -333,6 +350,11 @@ function CafeListPanel({ cafes, onSelectCafe, filterCount, searchQuery, favorite
                   <span style={{ fontWeight: 700, fontSize: 14, color: "#1a1a1a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{cafe.name}</span>
                   {favCounts[cafe.id] > 0 && (
                     <span style={{ fontSize: 11, color: "#FF4B6E", fontWeight: 700, flexShrink: 0 }}>♥ {favCounts[cafe.id]}</span>
+                  )}
+                  {sortBy === "distance" && userLocation && cafe.lat && cafe.lng && (
+                    <span style={{ fontSize: 11, color: PURPLE_DARK, fontWeight: 700, flexShrink: 0 }}>
+                      📍 {formatDistance(getDistance(userLocation.lat, userLocation.lng, cafe.lat, cafe.lng))}
+                    </span>
                   )}
                 </div>
                 <div style={{ fontSize: 11, color: "#bbb", marginBottom: 6, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{cafe.nearStation ? `🚇 ${cafe.nearStation} · ` : ""}{cafe.address}</div>
@@ -809,8 +831,18 @@ function App() {
     try { return JSON.parse(localStorage.getItem('kagong_favorites') || '[]'); } catch { return []; }
   });
   const [showFavorites, setShowFavorites] = useState(false);
+  const [userLocation, setUserLocation] = useState(null);
 
   useEffect(() => { track("app_open"); }, []);
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        pos => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        () => {}
+      );
+    }
+  }, []);
 
   const toggleFavorite = useCallback((cafeId, cafeName) => {
     setFavorites(prev => {
@@ -876,7 +908,7 @@ function App() {
         {screen === "map" && <AppHeader favorites={favorites} onFavoritesClick={() => setShowFavorites(true)} />}
         {screen === "map" && <SearchBar query={searchQuery} onChange={setSearchQuery} onFilterClick={() => setShowFilter(true)} filterCount={filterCount} />}
         {screen === "map" && <QuickFilterBar activeFilters={activeFilters} onToggle={handleQuickFilterToggle} onToggleMulti={handleQuickFilterMultiToggle} />}
-        {screen === "map" && <CafeListPanel cafes={filteredCafes} onSelectCafe={handleSelectCafe} filterCount={filterCount} searchQuery={searchQuery} favorites={favorites} />}
+        {screen === "map" && <CafeListPanel cafes={filteredCafes} onSelectCafe={handleSelectCafe} filterCount={filterCount} searchQuery={searchQuery} favorites={favorites} userLocation={userLocation} />}
         {screen === "map" && selectedCafe && (
           <CafePreviewCard cafe={selectedCafe} cafeIndex={selectedCafeIndex} onOpen={() => setScreen("detail")} onClose={() => setSelectedCafe(null)} isFavorite={favorites.includes(selectedCafe.id)} onToggleFavorite={toggleFavorite} />
         )}
