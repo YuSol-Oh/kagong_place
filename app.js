@@ -129,7 +129,7 @@ function AppHeader({ favorites, onFavoritesClick, user, onLoginClick }) {
     <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 1002, padding: "14px 16px 0", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
         <div style={{ width: 32, height: 32, background: PURPLE_DARK, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, boxShadow: "0 2px 8px rgba(91,79,199,0.35)" }}>☕</div>
-        <span style={{ fontSize: 16, fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.3px" }}>카공플레이스</span>
+        <span style={{ fontSize: 16, fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.3px" }}>카공지도</span>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <button onClick={onLoginClick} style={{ height: 34, borderRadius: 20, background: user ? PURPLE_LIGHT : "rgba(255,255,255,0.95)", border: user ? `1.5px solid #C4B5FD` : "1.5px solid #eee", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, padding: "0 12px", boxShadow: "0 2px 10px rgba(0,0,0,0.08)" }}>
@@ -276,18 +276,10 @@ function CafePreviewCard({ cafe, cafeIndex, onOpen, onClose, isFavorite, onToggl
 }
 
 // ===================== CAFE LIST PANEL =====================
-function CafeListPanel({ cafes, onSelectCafe, filterCount, searchQuery, favorites, userLocation }) {
+function CafeListPanel({ cafes, onSelectCafe, filterCount, searchQuery, favorites, userLocation, favCounts }) {
   const [expanded, setExpanded] = useState(false);
   const [sortBy, setSortBy] = useState("default");
-  const [favCounts, setFavCounts] = useState({});
   const listRef = useRef(null);
-
-  useEffect(() => {
-    fetch(`${BACKEND_URL}/api/favorites/counts`)
-      .then(r => r.json())
-      .then(data => setFavCounts(data))
-      .catch(() => {});
-  }, []);
 
   useEffect(() => {
     if (filterCount > 0 || searchQuery) setExpanded(true);
@@ -920,11 +912,20 @@ function App() {
   const [showFavorites, setShowFavorites] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
   const [showLogin, setShowLogin] = useState(false);
+  const [favCounts, setFavCounts] = useState({});
   const [user, setUser] = useState(() => {
     try { return JSON.parse(localStorage.getItem("kagong_user") || "null"); } catch { return null; }
   });
 
   useEffect(() => { track("app_open"); }, []);
+
+  // 즐겨찾기 수 초기 로드
+  useEffect(() => {
+    fetch(`${BACKEND_URL}/api/favorites/counts`)
+      .then(r => r.json())
+      .then(data => setFavCounts(data))
+      .catch(() => {});
+  }, []);
 
   // 로그인 상태면 서버에서 즐겨찾기 불러오기
   useEffect(() => {
@@ -968,6 +969,11 @@ function App() {
       localStorage.setItem('kagong_favorites', JSON.stringify(next));
       track(isAdding ? "favorite_add" : "favorite_remove", { cafe_id: cafeId, cafe_name: cafeName || cafeId });
       syncFavoritesToServer(next, JSON.parse(localStorage.getItem("kagong_user") || "null"));
+      // favCounts 즉시 업데이트
+      setFavCounts(prev => ({
+        ...prev,
+        [cafeId]: Math.max(0, (prev[cafeId] || 0) + (isAdding ? 1 : -1))
+      }));
       return next;
     });
   }, [syncFavoritesToServer]);
@@ -1033,7 +1039,7 @@ function App() {
         {screen === "map" && <AppHeader favorites={favorites} onFavoritesClick={() => setShowFavorites(true)} user={user} onLoginClick={() => setShowLogin(true)} />}
         {screen === "map" && <SearchBar query={searchQuery} onChange={setSearchQuery} onFilterClick={() => setShowFilter(true)} filterCount={filterCount} />}
         {screen === "map" && <QuickFilterBar activeFilters={activeFilters} onToggle={handleQuickFilterToggle} onToggleMulti={handleQuickFilterMultiToggle} />}
-        {screen === "map" && <CafeListPanel cafes={filteredCafes} onSelectCafe={handleSelectCafe} filterCount={filterCount} searchQuery={searchQuery} favorites={favorites} userLocation={userLocation} />}
+        {screen === "map" && <CafeListPanel cafes={filteredCafes} onSelectCafe={handleSelectCafe} filterCount={filterCount} searchQuery={searchQuery} favorites={favorites} userLocation={userLocation} favCounts={favCounts} />}
         {screen === "map" && selectedCafe && (
           <CafePreviewCard cafe={selectedCafe} cafeIndex={selectedCafeIndex} onOpen={() => setScreen("detail")} onClose={() => setSelectedCafe(null)} isFavorite={favorites.includes(selectedCafe.id)} onToggleFavorite={toggleFavorite} />
         )}
