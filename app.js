@@ -124,17 +124,23 @@ function MapScreen({ cafes, selectedCafe, onMarkerClick }) {
 }
 
 // ===================== APP HEADER =====================
-function AppHeader({ favorites, onFavoritesClick }) {
+function AppHeader({ favorites, onFavoritesClick, user, onLoginClick }) {
   return (
     <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 1002, padding: "14px 16px 0", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
         <div style={{ width: 32, height: 32, background: PURPLE_DARK, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, boxShadow: "0 2px 8px rgba(91,79,199,0.35)" }}>☕</div>
         <span style={{ fontSize: 16, fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.3px" }}>카공지도</span>
       </div>
-      <button onClick={onFavoritesClick} style={{ width: 40, height: 40, borderRadius: "50%", background: favorites.length > 0 ? "#FFF0F3" : "rgba(255,255,255,0.95)", border: favorites.length > 0 ? "1.5px solid #FECDD3" : "1.5px solid #eee", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 10px rgba(0,0,0,0.1)", position: "relative" }}>
-        <span style={{ fontSize: 17, color: favorites.length > 0 ? "#FF4B6E" : "#ccc" }}>{favorites.length > 0 ? "♥" : "♡"}</span>
-        {favorites.length > 0 && <span style={{ position: "absolute", top: -4, right: -4, background: PURPLE_DARK, color: "#fff", borderRadius: "50%", width: 16, height: 16, fontSize: 9, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{favorites.length}</span>}
-      </button>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <button onClick={onLoginClick} style={{ height: 34, borderRadius: 20, background: user ? PURPLE_LIGHT : "rgba(255,255,255,0.95)", border: user ? `1.5px solid #C4B5FD` : "1.5px solid #eee", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, padding: "0 12px", boxShadow: "0 2px 10px rgba(0,0,0,0.08)" }}>
+          <span style={{ fontSize: 14 }}>{user ? "👤" : "🔑"}</span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: user ? PURPLE_DARK : "#888" }}>{user ? user.nickname : "로그인"}</span>
+        </button>
+        <button onClick={onFavoritesClick} style={{ width: 40, height: 40, borderRadius: "50%", background: favorites.length > 0 ? "#FFF0F3" : "rgba(255,255,255,0.95)", border: favorites.length > 0 ? "1.5px solid #FECDD3" : "1.5px solid #eee", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 10px rgba(0,0,0,0.1)", position: "relative" }}>
+          <span style={{ fontSize: 17, color: favorites.length > 0 ? "#FF4B6E" : "#ccc" }}>{favorites.length > 0 ? "♥" : "♡"}</span>
+          {favorites.length > 0 && <span style={{ position: "absolute", top: -4, right: -4, background: PURPLE_DARK, color: "#fff", borderRadius: "50%", width: 16, height: 16, fontSize: 9, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{favorites.length}</span>}
+        </button>
+      </div>
     </div>
   );
 }
@@ -817,6 +823,87 @@ function WriteReview({ cafe, onBack, onSubmit }) {
   );
 }
 
+// ===================== LOGIN MODAL =====================
+function LoginModal({ onClose, onLogin, currentFavorites }) {
+  const [mode, setMode] = useState("login"); // "login" | "register"
+  const [nickname, setNickname] = useState("");
+  const [pin, setPin] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const submit = async () => {
+    setError("");
+    if (!nickname.trim()) return setError("닉네임을 입력해주세요");
+    if (!/^\d{4}$/.test(pin)) return setError("PIN은 숫자 4자리여야 해요");
+    setLoading(true);
+    try {
+      const endpoint = mode === "login" ? "/api/users/login" : "/api/users/register";
+      const res = await fetch(`${BACKEND_URL}${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nickname: nickname.trim(), pin }),
+      });
+      const data = await res.json();
+      if (!data.ok) return setError(data.error || "오류가 발생했어요");
+
+      const user = data.user;
+      // 로그인 시: 서버 즐겨찾기로 덮어쓰기
+      // 회원가입 시: 현재 로컬 즐겨찾기를 서버에 저장
+      if (mode === "register" && currentFavorites.length > 0) {
+        await fetch(`${BACKEND_URL}/api/users/${user.id}/favorites`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ favorites: currentFavorites, pin }),
+        });
+        user.favorites = currentFavorites;
+      }
+      localStorage.setItem("kagong_user", JSON.stringify({ id: user.id, nickname: user.nickname, pin }));
+      onLogin(user);
+    } catch (e) {
+      setError("서버 연결에 실패했어요");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ position: "absolute", inset: 0, zIndex: 3000, display: "flex", flexDirection: "column" }}>
+      <div style={{ flex: 1, background: "rgba(0,0,0,0.45)" }} onClick={onClose} />
+      <div style={{ background: "#fff", borderRadius: "24px 24px 0 0", padding: "28px 24px 48px", animation: "slideUpFull 0.3s ease" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+          <span style={{ fontSize: 19, fontWeight: 800 }}>{mode === "login" ? "로그인" : "회원가입"}</span>
+          <button onClick={onClose} style={{ background: "#f5f5f7", border: "none", cursor: "pointer", borderRadius: "50%", width: 32, height: 32, fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+        </div>
+
+        <div style={{ fontSize: 13, fontWeight: 700, color: "#555", marginBottom: 8 }}>닉네임</div>
+        <input value={nickname} onChange={e => setNickname(e.target.value)} placeholder="닉네임 입력 (2~20자)"
+          style={{ width: "100%", border: `1.5px solid ${nickname ? PURPLE : "#E5E3F5"}`, borderRadius: 12, padding: "11px 14px", fontSize: 14, fontFamily: "inherit", outline: "none", marginBottom: 16, background: "#fafafe" }}
+          onFocus={e => e.target.style.borderColor = PURPLE}
+          onBlur={e => e.target.style.borderColor = nickname ? PURPLE : "#E5E3F5"} />
+
+        <div style={{ fontSize: 13, fontWeight: 700, color: "#555", marginBottom: 8 }}>PIN (숫자 4자리)</div>
+        <input value={pin} onChange={e => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
+          placeholder="●●●●" type="password" inputMode="numeric"
+          style={{ width: "100%", border: `1.5px solid ${pin ? PURPLE : "#E5E3F5"}`, borderRadius: 12, padding: "11px 14px", fontSize: 18, fontFamily: "inherit", outline: "none", marginBottom: 8, background: "#fafafe", letterSpacing: 6 }}
+          onFocus={e => e.target.style.borderColor = PURPLE}
+          onBlur={e => e.target.style.borderColor = pin ? PURPLE : "#E5E3F5"} />
+
+        {error && <div style={{ fontSize: 13, color: "#FF4757", marginBottom: 12, fontWeight: 600 }}>⚠️ {error}</div>}
+
+        <button onClick={submit} disabled={loading}
+          style={{ width: "100%", padding: "14px", background: loading ? "#aaa" : PURPLE_DARK, color: "#fff", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", fontFamily: "inherit", marginTop: 8, boxShadow: "0 4px 14px rgba(91,79,199,0.4)" }}>
+          {loading ? "처리 중..." : mode === "login" ? "로그인" : "가입하기"}
+        </button>
+
+        <button onClick={() => { setMode(m => m === "login" ? "register" : "login"); setError(""); }}
+          style={{ width: "100%", padding: "12px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#aaa", fontFamily: "inherit", marginTop: 8 }}>
+          {mode === "login" ? "아직 계정이 없어요 → 회원가입" : "이미 계정이 있어요 → 로그인"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ===================== APP =====================
 function App() {
   const [screen, setScreen] = useState("map");
@@ -832,8 +919,27 @@ function App() {
   });
   const [showFavorites, setShowFavorites] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
+  const [showLogin, setShowLogin] = useState(false);
+  const [user, setUser] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("kagong_user") || "null"); } catch { return null; }
+  });
 
   useEffect(() => { track("app_open"); }, []);
+
+  // 로그인 상태면 서버에서 즐겨찾기 불러오기
+  useEffect(() => {
+    if (!user) return;
+    fetch(`${BACKEND_URL}/api/users/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nickname: user.nickname, pin: user.pin }),
+    }).then(r => r.json()).then(data => {
+      if (data.ok) {
+        setFavorites(data.user.favorites || []);
+        localStorage.setItem('kagong_favorites', JSON.stringify(data.user.favorites || []));
+      }
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -844,15 +950,34 @@ function App() {
     }
   }, []);
 
+  const syncFavoritesToServer = useCallback(async (newFavorites, currentUser) => {
+    if (!currentUser) return;
+    try {
+      await fetch(`${BACKEND_URL}/api/users/${currentUser.id}/favorites`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ favorites: newFavorites, pin: currentUser.pin }),
+      });
+    } catch (e) {}
+  }, []);
+
   const toggleFavorite = useCallback((cafeId, cafeName) => {
     setFavorites(prev => {
       const isAdding = !prev.includes(cafeId);
       const next = isAdding ? [...prev, cafeId] : prev.filter(id => id !== cafeId);
       localStorage.setItem('kagong_favorites', JSON.stringify(next));
       track(isAdding ? "favorite_add" : "favorite_remove", { cafe_id: cafeId, cafe_name: cafeName || cafeId });
+      syncFavoritesToServer(next, JSON.parse(localStorage.getItem("kagong_user") || "null"));
       return next;
     });
-  }, []);
+  }, [syncFavoritesToServer]);
+
+  const handleLogin = (loggedInUser) => {
+    setUser(loggedInUser);
+    setFavorites(loggedInUser.favorites || []);
+    localStorage.setItem('kagong_favorites', JSON.stringify(loggedInUser.favorites || []));
+    setShowLogin(false);
+  };
 
   const handleQuickFilterToggle = (cat, val) => {
     setActiveFilters(prev => { const arr = [...(prev[cat] || [])]; const idx = arr.indexOf(val); if (idx >= 0) arr.splice(idx, 1); else arr.push(val); return { ...prev, [cat]: arr }; });
@@ -905,7 +1030,7 @@ function App() {
         <div style={{ width: "100%", height: "100%" }}>
           <MapScreen cafes={filteredCafes} selectedCafe={selectedCafe} onMarkerClick={handleMarkerClick} />
         </div>
-        {screen === "map" && <AppHeader favorites={favorites} onFavoritesClick={() => setShowFavorites(true)} />}
+        {screen === "map" && <AppHeader favorites={favorites} onFavoritesClick={() => setShowFavorites(true)} user={user} onLoginClick={() => setShowLogin(true)} />}
         {screen === "map" && <SearchBar query={searchQuery} onChange={setSearchQuery} onFilterClick={() => setShowFilter(true)} filterCount={filterCount} />}
         {screen === "map" && <QuickFilterBar activeFilters={activeFilters} onToggle={handleQuickFilterToggle} onToggleMulti={handleQuickFilterMultiToggle} />}
         {screen === "map" && <CafeListPanel cafes={filteredCafes} onSelectCafe={handleSelectCafe} filterCount={filterCount} searchQuery={searchQuery} favorites={favorites} userLocation={userLocation} />}
@@ -923,6 +1048,9 @@ function App() {
         )}
         {showFilter && (
           <FilterModal activeFilters={activeFilters} onApply={handleApplyFilter} onClose={() => setShowFilter(false)} />
+        )}
+        {showLogin && (
+          <LoginModal onClose={() => setShowLogin(false)} onLogin={handleLogin} currentFavorites={favorites} />
         )}
       </div>
     </div>
