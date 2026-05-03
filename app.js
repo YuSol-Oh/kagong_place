@@ -59,10 +59,10 @@ const track = async (eventName, params = {}) => {
 function TagChip({ label, selected, onClick, size = "md" }) {
   const sizes = { sm: { fontSize: 11, padding: "3px 9px" }, md: { fontSize: 13, padding: "6px 13px" } };
   const colors = selected
-    ? { background: PURPLE_LIGHT, borderColor: "#C4B5FD", color: PURPLE_DARK }
-    : { background: "#F5F4FF", borderColor: "#E5E3F5", color: "#888" };
+    ? { background: PURPLE_LIGHT, border: "1px solid #C4B5FD", color: PURPLE_DARK }
+    : { background: "#F5F4FF", border: "1px solid #E5E3F5", color: "#888" };
   return (
-    <button onClick={onClick} style={{ ...sizes[size], ...colors, display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: 20, border: "1px solid", cursor: onClick ? "pointer" : "default", fontFamily: "inherit", fontWeight: 600, transition: "all 0.15s", whiteSpace: "nowrap", lineHeight: 1.2 }}>{label}</button>
+    <button onClick={onClick} style={{ ...sizes[size], ...colors, display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: 20, cursor: onClick ? "pointer" : "default", fontFamily: "inherit", fontWeight: 600, transition: "all 0.15s", whiteSpace: "nowrap", lineHeight: 1.2 }}>{label}</button>
   );
 }
 
