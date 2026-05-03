@@ -177,22 +177,31 @@ function SearchBar({ query, onChange, onFilterClick, filterCount }) {
 }
 
 // ===================== QUICK FILTER BAR =====================
-const QUICK_FILTERS = [
-  { cat: "콘센트", val: "넉넉함", label: "콘센트 넉넉" },
-  { cat: "소음", val: "조용함", label: "조용함" },
+// 단일 태그 필터
+const QUICK_FILTERS_SINGLE = [
   { cat: "분위기", val: "카공러 다수", label: "카공러 다수" },
-  { cat: "소음", val: "적당함", label: "적당한 소음" },
-  { cat: "분위기", val: "모던한", label: "모던한" },
+];
+// 복합 태그 필터 (버튼 하나로 여러 태그 동시 적용)
+const QUICK_FILTERS_MULTI = [
+  { label: "콘센트 넉넉/거의 전좌석", tags: [{ cat: "콘센트", val: "넉넉함" }, { cat: "콘센트", val: "거의 전좌석" }] },
 ];
 
-function QuickFilterBar({ activeFilters, onToggle }) {
+function QuickFilterBar({ activeFilters, onToggle, onToggleMulti }) {
   const isOn = (cat, val) => (activeFilters[cat] || []).includes(val);
+  const isMultiOn = (tags) => tags.some(({ cat, val }) => isOn(cat, val));
   return (
     <div style={{ position: "absolute", top: 112, left: 0, right: 0, zIndex: 999, padding: "0 16px", overflowX: "auto", display: "flex", gap: 7, scrollbarWidth: "none" }} className="no-scroll">
-      {QUICK_FILTERS.map(f => {
+      {QUICK_FILTERS_SINGLE.map(f => {
         const active = isOn(f.cat, f.val);
         return (
           <button key={`${f.cat}-${f.val}`} onClick={() => { track("quick_filter_toggle", { filter_tag: f.label, filter_category: f.cat, action: active ? "off" : "on" }); onToggle(f.cat, f.val); }}
+            style={{ background: active ? PURPLE_DARK : "rgba(255,255,255,0.95)", color: active ? "#fff" : "#555", border: active ? `1.5px solid ${PURPLE_DARK}` : "1.5px solid rgba(255,255,255,0.8)", borderRadius: 20, padding: "5px 12px", fontSize: 12, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0, boxShadow: active ? "0 2px 8px rgba(91,79,199,0.4)" : "0 2px 8px rgba(0,0,0,0.1)", transition: "all 0.15s" }}>{f.label}</button>
+        );
+      })}
+      {QUICK_FILTERS_MULTI.map(f => {
+        const active = isMultiOn(f.tags);
+        return (
+          <button key={f.label} onClick={() => { track("quick_filter_toggle", { filter_tag: f.label, action: active ? "off" : "on" }); onToggleMulti(f.tags, active); }}
             style={{ background: active ? PURPLE_DARK : "rgba(255,255,255,0.95)", color: active ? "#fff" : "#555", border: active ? `1.5px solid ${PURPLE_DARK}` : "1.5px solid rgba(255,255,255,0.8)", borderRadius: 20, padding: "5px 12px", fontSize: 12, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0, boxShadow: active ? "0 2px 8px rgba(91,79,199,0.4)" : "0 2px 8px rgba(0,0,0,0.1)", transition: "all 0.15s" }}>{f.label}</button>
         );
       })}
@@ -796,6 +805,18 @@ function App() {
     setActiveFilters(prev => { const arr = [...(prev[cat] || [])]; const idx = arr.indexOf(val); if (idx >= 0) arr.splice(idx, 1); else arr.push(val); return { ...prev, [cat]: arr }; });
   };
 
+  const handleQuickFilterMultiToggle = (tags, currentlyOn) => {
+    setActiveFilters(prev => {
+      const next = { ...prev };
+      if (currentlyOn) {
+        tags.forEach(({ cat, val }) => { next[cat] = (next[cat] || []).filter(v => v !== val); });
+      } else {
+        tags.forEach(({ cat, val }) => { const arr = [...(next[cat] || [])]; if (!arr.includes(val)) arr.push(val); next[cat] = arr; });
+      }
+      return next;
+    });
+  };
+
   const filterCount = Object.values(activeFilters).flat().length;
 
   const filteredCafes = cafes.filter(cafe => {
@@ -833,7 +854,7 @@ function App() {
         </div>
         {screen === "map" && <AppHeader favorites={favorites} onFavoritesClick={() => setShowFavorites(true)} />}
         {screen === "map" && <SearchBar query={searchQuery} onChange={setSearchQuery} onFilterClick={() => setShowFilter(true)} filterCount={filterCount} />}
-        {screen === "map" && <QuickFilterBar activeFilters={activeFilters} onToggle={handleQuickFilterToggle} />}
+        {screen === "map" && <QuickFilterBar activeFilters={activeFilters} onToggle={handleQuickFilterToggle} onToggleMulti={handleQuickFilterMultiToggle} />}
         {screen === "map" && <CafeListPanel cafes={filteredCafes} onSelectCafe={handleSelectCafe} filterCount={filterCount} searchQuery={searchQuery} />}
         {screen === "map" && selectedCafe && (
           <CafePreviewCard cafe={selectedCafe} cafeIndex={selectedCafeIndex} onOpen={() => setScreen("detail")} onClose={() => setSelectedCafe(null)} isFavorite={favorites.includes(selectedCafe.id)} onToggleFavorite={toggleFavorite} />
