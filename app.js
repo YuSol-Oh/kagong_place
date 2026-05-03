@@ -129,7 +129,7 @@ function AppHeader({ favorites, onFavoritesClick, user, onLoginClick }) {
     <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 1002, padding: "14px 16px 0", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
         <div style={{ width: 32, height: 32, background: PURPLE_DARK, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, boxShadow: "0 2px 8px rgba(91,79,199,0.35)" }}>☕</div>
-        <span style={{ fontSize: 16, fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.3px" }}>카공지도</span>
+        <span style={{ fontSize: 16, fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.3px" }}>카공플레이스</span>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <button onClick={onLoginClick} style={{ height: 34, borderRadius: 20, background: user ? PURPLE_LIGHT : "rgba(255,255,255,0.95)", border: user ? `1.5px solid #C4B5FD` : "1.5px solid #eee", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, padding: "0 12px", boxShadow: "0 2px 10px rgba(0,0,0,0.08)" }}>
