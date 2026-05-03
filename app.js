@@ -284,16 +284,24 @@ function CafePreviewCard({ cafe, cafeIndex, onOpen, onClose, isFavorite, onToggl
 function CafeListPanel({ cafes, onSelectCafe, filterCount, searchQuery, favorites }) {
   const [expanded, setExpanded] = useState(false);
   const [sortBy, setSortBy] = useState("default");
+  const [favCounts, setFavCounts] = useState({});
   const listRef = useRef(null);
+
+  useEffect(() => {
+    fetch(`${BACKEND_URL}/api/favorites/counts`)
+      .then(r => r.json())
+      .then(data => setFavCounts(data))
+      .catch(() => {});
+  }, []);
+
   useEffect(() => {
     if (filterCount > 0 || searchQuery) setExpanded(true);
     else setExpanded(false);
   }, [filterCount, searchQuery]);
+
   const sortedCafes = [...cafes].sort((a, b) => {
     if (sortBy === "favorites") {
-      const aFav = favorites.includes(a.id) ? 1 : 0;
-      const bFav = favorites.includes(b.id) ? 1 : 0;
-      return bFav - aFav;
+      return (favCounts[b.id] || 0) - (favCounts[a.id] || 0);
     }
     return 0;
   });
@@ -338,6 +346,9 @@ function CafeListPanel({ cafes, onSelectCafe, filterCount, searchQuery, favorite
                 <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 3 }}>
                   <span style={{ fontWeight: 700, fontSize: 14, color: "#1a1a1a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{cafe.name}</span>
                   <Stars rating={cafe.rating} />
+                  {sortBy === "favorites" && favCounts[cafe.id] > 0 && (
+                    <span style={{ fontSize: 11, color: "#FF4B6E", fontWeight: 700 }}>♥ {favCounts[cafe.id]}</span>
+                  )}
                 </div>
                 <div style={{ fontSize: 11, color: "#bbb", marginBottom: 6, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{cafe.nearStation ? `🚇 ${cafe.nearStation} · ` : ""}{cafe.address}</div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
