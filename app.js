@@ -181,10 +181,15 @@ const QUICK_FILTERS_SINGLE = [
 const QUICK_FILTERS_MULTI = [
   { label: "콘센트 넉넉/거의 전좌석", tags: [{ cat: "콘센트", val: "넉넉함" }, { cat: "콘센트", val: "거의 전좌석" }] },
 ];
+// 모든 태그를 동시에 만족해야 하는 필터
+const QUICK_FILTERS_BOTH = [
+  { label: "카공적합 책상", tags: [{ cat: "테이블", val: "높이 적당" }, { cat: "테이블", val: "넓이 적당" }] },
+];
 
-function QuickFilterBar({ activeFilters, onToggle, onToggleMulti }) {
+function QuickFilterBar({ activeFilters, onToggle, onToggleMulti, onToggleBoth }) {
   const isOn = (cat, val) => (activeFilters[cat] || []).includes(val);
   const isMultiOn = (tags) => tags.some(({ cat, val }) => isOn(cat, val));
+  const isBothOn = (tags) => tags.every(({ cat, val }) => isOn(cat, val));
   return (
     <div style={{ position: "absolute", top: 112, left: 0, right: 0, zIndex: 999, padding: "0 16px", overflowX: "auto", display: "flex", gap: 7, scrollbarWidth: "none" }} className="no-scroll">
       {QUICK_FILTERS_SINGLE.map(f => {
@@ -198,6 +203,13 @@ function QuickFilterBar({ activeFilters, onToggle, onToggleMulti }) {
         const active = isMultiOn(f.tags);
         return (
           <button key={f.label} onClick={() => { track("quick_filter_toggle", { filter_tag: f.label, action: active ? "off" : "on" }); onToggleMulti(f.tags, active); }}
+            style={{ background: active ? PURPLE_DARK : "rgba(255,255,255,0.95)", color: active ? "#fff" : "#555", border: active ? `1.5px solid ${PURPLE_DARK}` : "1.5px solid rgba(255,255,255,0.8)", borderRadius: 20, padding: "5px 12px", fontSize: 12, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0, boxShadow: active ? "0 2px 8px rgba(91,79,199,0.4)" : "0 2px 8px rgba(0,0,0,0.1)", transition: "all 0.15s" }}>{f.label}</button>
+        );
+      })}
+      {QUICK_FILTERS_BOTH.map(f => {
+        const active = isBothOn(f.tags);
+        return (
+          <button key={f.label} onClick={() => { track("quick_filter_toggle", { filter_tag: f.label, action: active ? "off" : "on" }); onToggleBoth(f.tags, active); }}
             style={{ background: active ? PURPLE_DARK : "rgba(255,255,255,0.95)", color: active ? "#fff" : "#555", border: active ? `1.5px solid ${PURPLE_DARK}` : "1.5px solid rgba(255,255,255,0.8)", borderRadius: 20, padding: "5px 12px", fontSize: 12, fontWeight: 600, fontFamily: "inherit", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0, boxShadow: active ? "0 2px 8px rgba(91,79,199,0.4)" : "0 2px 8px rgba(0,0,0,0.1)", transition: "all 0.15s" }}>{f.label}</button>
         );
       })}
@@ -1001,6 +1013,18 @@ function App() {
     });
   };
 
+  const handleQuickFilterBothToggle = (tags, currentlyOn) => {
+    setActiveFilters(prev => {
+      const next = { ...prev };
+      if (currentlyOn) {
+        tags.forEach(({ cat, val }) => { next[cat] = (next[cat] || []).filter(v => v !== val); });
+      } else {
+        tags.forEach(({ cat, val }) => { const arr = [...(next[cat] || [])]; if (!arr.includes(val)) arr.push(val); next[cat] = arr; });
+      }
+      return next;
+    });
+  };
+
   const filterCount = Object.values(activeFilters).flat().length;
 
   const filteredCafes = cafes.filter(cafe => {
@@ -1010,7 +1034,12 @@ function App() {
       const cafeTags = cafe.tags[cat];
       if (!cafeTags) return false;
       const arr = Array.isArray(cafeTags) ? cafeTags : [cafeTags];
-      if (!vals.some(v => arr.includes(v))) return false;
+      // 테이블 카테고리는 AND 조건 (선택한 태그 모두 포함해야 함)
+      if (cat === "테이블") {
+        if (!vals.every(v => arr.includes(v))) return false;
+      } else {
+        if (!vals.some(v => arr.includes(v))) return false;
+      }
     }
     return true;
   });
@@ -1038,7 +1067,7 @@ function App() {
         </div>
         {screen === "map" && <AppHeader favorites={favorites} onFavoritesClick={() => setShowFavorites(true)} user={user} onLoginClick={() => setShowLogin(true)} />}
         {screen === "map" && <SearchBar query={searchQuery} onChange={setSearchQuery} onFilterClick={() => setShowFilter(true)} filterCount={filterCount} />}
-        {screen === "map" && <QuickFilterBar activeFilters={activeFilters} onToggle={handleQuickFilterToggle} onToggleMulti={handleQuickFilterMultiToggle} />}
+        {screen === "map" && <QuickFilterBar activeFilters={activeFilters} onToggle={handleQuickFilterToggle} onToggleMulti={handleQuickFilterMultiToggle} onToggleBoth={handleQuickFilterBothToggle} />}
         {screen === "map" && <CafeListPanel cafes={filteredCafes} onSelectCafe={handleSelectCafe} filterCount={filterCount} searchQuery={searchQuery} favorites={favorites} userLocation={userLocation} favCounts={favCounts} />}
         {screen === "map" && selectedCafe && (
           <CafePreviewCard cafe={selectedCafe} cafeIndex={selectedCafeIndex} onOpen={() => setScreen("detail")} onClose={() => setSelectedCafe(null)} isFavorite={favorites.includes(selectedCafe.id)} onToggleFavorite={toggleFavorite} />
