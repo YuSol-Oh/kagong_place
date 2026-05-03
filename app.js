@@ -436,26 +436,29 @@ function CafeDetail({ cafe, cafeIndex, onBack, onWriteReview, onLike, isFavorite
   });
 
   const handleLikeReview = async (reviewId) => {
-    const key = `liked_review_${reviewId}`;
     if (likedSet.has(String(reviewId))) return;
-    // 즉시 UI 반영 (낙관적 업데이트)
+    // 즉시 UI 비활성화 (중복 클릭 원천 차단)
     setLikedSet(prev => new Set([...prev, String(reviewId)]));
-    localStorage.setItem(key, "1");
     try {
-      const res = await fetch(`${BACKEND_URL}/api/reviews/${reviewId}/like`, { method: "PATCH" });
+      const res = await fetch(`${BACKEND_URL}/api/reviews/${reviewId}/like`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: SESSION_ID }),
+      });
       const data = await res.json();
       if (data.ok) {
+        localStorage.setItem(`liked_review_${reviewId}`, "1");
         setDbReviews(prev => prev.map(r => r.id === reviewId ? { ...r, likes: data.likes } : r));
         onLike(cafe.id, reviewId);
+      } else if (data.already_liked) {
+        // 이미 좋아요한 경우 localStorage도 동기화
+        localStorage.setItem(`liked_review_${reviewId}`, "1");
       } else {
-        // 실패 시 롤백
+        // 진짜 오류만 롤백
         setLikedSet(prev => { const next = new Set(prev); next.delete(String(reviewId)); return next; });
-        localStorage.removeItem(key);
       }
     } catch (e) {
-      // 실패 시 롤백
       setLikedSet(prev => { const next = new Set(prev); next.delete(String(reviewId)); return next; });
-      localStorage.removeItem(key);
     }
   };
 
