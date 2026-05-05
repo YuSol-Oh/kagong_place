@@ -124,7 +124,7 @@ function MapScreen({ cafes, selectedCafe, onMarkerClick }) {
 }
 
 // ===================== APP HEADER =====================
-function AppHeader({ favorites, onFavoritesClick, user, onLoginClick }) {
+function AppHeader({ favorites, onFavoritesClick, user, onLoginClick, onLogout }) {
   return (
     <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 1002, padding: "14px 16px 0", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
@@ -132,10 +132,24 @@ function AppHeader({ favorites, onFavoritesClick, user, onLoginClick }) {
         <span style={{ fontSize: 16, fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.3px" }}>카공플레이스</span>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <button onClick={onLoginClick} style={{ height: 34, borderRadius: 20, background: user ? PURPLE_LIGHT : "rgba(255,255,255,0.95)", border: user ? `1.5px solid #C4B5FD` : "1.5px solid #eee", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, padding: "0 12px", boxShadow: "0 2px 10px rgba(0,0,0,0.08)" }}>
-          <span style={{ fontSize: 14 }}>{user ? "👤" : "🔑"}</span>
-          <span style={{ fontSize: 12, fontWeight: 700, color: user ? PURPLE_DARK : "#888" }}>{user ? user.nickname : "로그인"}</span>
-        </button>
+        {user ? (
+          /* 로그인 상태: 닉네임 표시 + 로그아웃 버튼 */
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <div style={{ height: 34, borderRadius: 20, background: PURPLE_LIGHT, border: `1.5px solid #C4B5FD`, display: "flex", alignItems: "center", gap: 5, padding: "0 12px" }}>
+              <span style={{ fontSize: 14 }}>👤</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: PURPLE_DARK }}>{user.nickname}</span>
+            </div>
+            <button onClick={onLogout} style={{ height: 34, borderRadius: 20, background: "rgba(255,255,255,0.95)", border: "1.5px solid #eee", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, padding: "0 10px", boxShadow: "0 2px 10px rgba(0,0,0,0.08)" }}>
+              <span style={{ fontSize: 11, fontWeight: 600, color: "#888" }}>로그아웃</span>
+            </button>
+          </div>
+        ) : (
+          /* 비로그인 상태: 로그인 버튼 */
+          <button onClick={onLoginClick} style={{ height: 34, borderRadius: 20, background: "rgba(255,255,255,0.95)", border: "1.5px solid #eee", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, padding: "0 12px", boxShadow: "0 2px 10px rgba(0,0,0,0.08)" }}>
+            <span style={{ fontSize: 14 }}>🔑</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "#888" }}>로그인</span>
+          </button>
+        )}
         <button onClick={onFavoritesClick} style={{ width: 40, height: 40, borderRadius: "50%", background: favorites.length > 0 ? "#FFF0F3" : "rgba(255,255,255,0.95)", border: favorites.length > 0 ? "1.5px solid #FECDD3" : "1.5px solid #eee", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 10px rgba(0,0,0,0.1)", position: "relative" }}>
           <span style={{ fontSize: 17, color: favorites.length > 0 ? "#FF4B6E" : "#ccc" }}>{favorites.length > 0 ? "♥" : "♡"}</span>
           {favorites.length > 0 && <span style={{ position: "absolute", top: -4, right: -4, background: PURPLE_DARK, color: "#fff", borderRadius: "50%", width: 16, height: 16, fontSize: 9, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{favorites.length}</span>}
@@ -923,10 +937,10 @@ function FeedbackModal({ onClose }) {
     if (!text.trim()) { alert("내용을 입력해주세요"); return; }
     setLoading(true);
     try {
-      await fetch(`${BACKEND_URL}/api/track`, {
+      await fetch(`${BACKEND_URL}/api/feedback`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ event: "feedback", value: text.trim(), meta: { text: text.trim() } }),
+        body: JSON.stringify({ text: text.trim(), session_id: SESSION_ID }),
       });
       setDone(true);
       setTimeout(onClose, 1600);
@@ -1062,7 +1076,15 @@ function App() {
     setUser(loggedInUser);
     setFavorites(loggedInUser.favorites || []);
     localStorage.setItem('kagong_favorites', JSON.stringify(loggedInUser.favorites || []));
+    localStorage.setItem('kagong_user', JSON.stringify(loggedInUser));
     setShowLogin(false);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('kagong_user');
+    localStorage.removeItem('kagong_favorites');
+    setFavorites([]);
   };
 
   const handleQuickFilterToggle = (cat, val) => {
@@ -1133,7 +1155,7 @@ function App() {
         <div style={{ width: "100%", height: "100%" }}>
           <MapScreen cafes={filteredCafes} selectedCafe={selectedCafe} onMarkerClick={handleMarkerClick} />
         </div>
-        {screen === "map" && <AppHeader favorites={favorites} onFavoritesClick={() => setShowFavorites(true)} user={user} onLoginClick={() => setShowLogin(true)} />}
+        {screen === "map" && <AppHeader favorites={favorites} onFavoritesClick={() => setShowFavorites(true)} user={user} onLoginClick={() => setShowLogin(true)} onLogout={handleLogout} />}
         {screen === "map" && <SearchBar query={searchQuery} onChange={setSearchQuery} onFilterClick={() => setShowFilter(true)} filterCount={filterCount} />}
         {screen === "map" && <QuickFilterBar activeFilters={activeFilters} onToggle={handleQuickFilterToggle} onToggleMulti={handleQuickFilterMultiToggle} onToggleBoth={handleQuickFilterBothToggle} />}
         {screen === "map" && <CafeListPanel cafes={filteredCafes} onSelectCafe={handleSelectCafe} filterCount={filterCount} searchQuery={searchQuery} favorites={favorites} userLocation={userLocation} favCounts={favCounts} />}
