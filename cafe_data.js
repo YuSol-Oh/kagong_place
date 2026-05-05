@@ -18,6 +18,20 @@ const CAFES = [
       테이블: ["높이 적당", "넓이 적당"],
       메뉴: []
     },
+    images: [
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/1/1.PNG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/1/2.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/1/3.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/1/4.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/1/5.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/1/6.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/1/7.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/1/8.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/1/9.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/1/10.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/1/11.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/1/12.JPG"
+    ],
     ownerComment: "작업의, 작업에 의한, 작업을 위한 카페! 종일권도 있음!! 설경뷰 미쳤음❄️",
     reviews: [
       {
@@ -47,6 +61,19 @@ const CAFES = [
       테이블: ["높이 적당", "넓이 적당"],
       메뉴: ["식사 대용 끼니"]
     },
+    images: [
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/2/1.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/2/2.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/2/3.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/2/4.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/2/5.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/2/6.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/2/7.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/2/8.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/2/9.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/2/10.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/2/11.JPG"
+    ],
     ownerComment: "데이트로도 작업하러도 갈 수 있는 만능 카페",
     reviews: [
       {
@@ -76,6 +103,14 @@ const CAFES = [
       테이블: ["높이 적당", "넓이 적당"],
       메뉴: ["식사 대용 끼니"]
     },
+    images: [
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/3/1.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/3/2.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/3/3.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/3/4.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/3/5.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/3/6.JPG"
+    ],
     ownerComment: "왁자지껄하지 않고 나도 꼭 취뽀해서 flex하고 싶다는 자극을 주는 분위기",
     reviews: [
       {
@@ -105,6 +140,16 @@ const CAFES = [
       테이블: ["높이 적당", "넓이 적당"],
       메뉴: []
     },
+    images: [
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/4/1.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/4/2.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/4/3.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/4/4.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/4/5.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/4/6.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/4/7.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/4/8.JPG"
+    ],
     ownerComment: "건축, 설계 컨셉 만족도 200%",
     reviews: [
       {
@@ -134,6 +179,16 @@ const CAFES = [
       테이블: ["높이 적당", "넓이 적당"],
       메뉴: []
     },
+    images: [
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/5/1.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/5/2.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/5/3.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/5/4.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/5/5.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/5/6.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/5/7.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/5/8.JPG"
+    ],
     ownerComment: "따스하고 아늑한 동네 카페를 찾는다면",
     reviews: [
       {
@@ -163,6 +218,16 @@ const CAFES = [
       테이블: ["높이 적당", "넓이 적당"],
       메뉴: []
     },
+    images: [
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/6/1.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/6/2.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/6/3.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/6/4.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/6/5.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/6/6.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/6/7.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/6/8.JPG"
+    ],
     ownerComment: "감각적인 가구랑 디저트 두 개면 갈 이유는 충분하다 생각",
     reviews: [
       {
@@ -192,6 +257,15 @@ const CAFES = [
       테이블: ["높이 적당", "넓이 적당"],
       메뉴: []
     },
+    images: [
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/7/1.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/7/2.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/7/3.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/7/4.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/7/5.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/7/6.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/7/7.JPG"
+    ],
     ownerComment: "성북천의 한가로움을 느끼면서 작업하고 싶다면",
     reviews: [
       {
@@ -221,6 +295,15 @@ const CAFES = [
       테이블: ["높이 적당", "넓이 적당"],
       메뉴: ["식사 대용 끼니"]
     },
+    images: [
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/8/1.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/8/2.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/8/3.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/8/4.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/8/5.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/8/6.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/8/7.JPG"
+    ],
     ownerComment: "24시간!!!!!!!",
     reviews: [
       {
@@ -250,6 +333,15 @@ const CAFES = [
       테이블: ["높이 적당", "넓이 적당"],
       메뉴: ["맛있는 음료", "식사 대용 끼니"]
     },
+    images: [
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/9/1.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/9/2.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/9/3.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/9/4.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/9/5.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/9/6.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/9/7.JPG"
+    ],
     ownerComment: "도심 속에서 초록빛 녹음이 그리울 때 추천.",
     reviews: [
       {
@@ -279,6 +371,14 @@ const CAFES = [
       테이블: ["높이 적당", "넓이 적당"],
       메뉴: ["맛있는 디저트", "식사 대용 끼니"]
     },
+    images: [
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/10/1.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/10/2.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/10/3.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/10/4.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/10/5.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/10/6.JPG"
+    ],
     ownerComment: "미대생 언니 손에 이끌려 가게된 곳",
     reviews: [
       {
@@ -308,6 +408,16 @@ const CAFES = [
       테이블: ["높이 적당", "넓이 적당"],
       메뉴: ["맛있는 디저트"]
     },
+    images: [
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/11/1.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/11/2.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/11/3.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/11/4.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/11/5.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/11/6.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/11/7.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/11/8.JPG"
+    ],
     ownerComment: "뷰에 모든 가중치를 건다면 꼭 와야하는 곳",
     reviews: [
       {
@@ -337,6 +447,19 @@ const CAFES = [
       테이블: ["높이 적당", "넓이 적당"],
       메뉴: ["맛있는 디저트"]
     },
+    images: [
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/13/1.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/13/2.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/13/3.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/13/4.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/13/5.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/13/6.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/13/7.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/13/8.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/13/9.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/13/10.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/13/11.JPG"
+    ],
     ownerComment: "다락방 느낌의 공간에 CD 플레이어까지",
     reviews: [
       {
@@ -366,6 +489,17 @@ const CAFES = [
       테이블: ["높이 적당", "넓이 적당"],
       메뉴: []
     },
+    images: [
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/14/1.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/14/2.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/14/3.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/14/4.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/14/5.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/14/6.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/14/7.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/14/8.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/14/9.JPG"
+    ],
     ownerComment: "작업용 책상과 의자에 감성 있는 인테리어",
     reviews: [
       {
@@ -395,6 +529,19 @@ const CAFES = [
       테이블: ["높이 적당", "넓이 적당"],
       메뉴: []
     },
+    images: [
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/15/1.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/15/2.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/15/3.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/15/4.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/15/5.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/15/6.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/15/7.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/15/8.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/15/9.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/15/10.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/15/11.JPG"
+    ],
     ownerComment: "건물 자체가 미학적으로 예쁜 공간. 희귀한 잡지와 사진책 많음",
     reviews: [
       {
@@ -424,6 +571,14 @@ const CAFES = [
       테이블: ["높이 적당", "넓이 적당"],
       메뉴: []
     },
+    images: [
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/16/1.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/16/2.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/16/3.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/16/4.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/16/5.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/16/6.JPG"
+    ],
     ownerComment: "미술관+루프탑+티라미수",
     reviews: [
       {
@@ -453,6 +608,14 @@ const CAFES = [
       테이블: ["높이 적당", "넓이 적당"],
       메뉴: []
     },
+    images: [
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/17/1.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/17/2.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/17/3.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/17/4.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/17/5.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/17/6.JPG"
+    ],
     ownerComment: "세금 내는데 여기 안 가면 손해 아닐까",
     reviews: [
       {
@@ -482,6 +645,16 @@ const CAFES = [
       테이블: ["높이 적당", "넓이 적당"],
       메뉴: ["맛있는 음료", "식사 대용 끼니"]
     },
+    images: [
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/18/1.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/18/2.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/18/3.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/18/4.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/18/5.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/18/6.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/18/7.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/18/8.JPG"
+    ],
     ownerComment: "작업하기 좋은 분좋카의 고전명작",
     reviews: [
       {
@@ -511,6 +684,18 @@ const CAFES = [
       테이블: ["높이 적당", "넓이 적당"],
       메뉴: []
     },
+    images: [
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/19/1.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/19/2.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/19/3.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/19/4.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/19/5.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/19/6.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/19/7.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/19/8.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/19/9.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/19/10.JPG"
+    ],
     ownerComment: "들린다. 안녕하세요 여기서 작업하세요!!!!!\"라고 소리치는 공간의 외침이.",
     reviews: [
       {
@@ -540,6 +725,16 @@ const CAFES = [
       테이블: ["높이 적당", "넓이 적당"],
       메뉴: ["맛있는 디저트"]
     },
+    images: [
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/20/1.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/20/2.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/20/3.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/20/4.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/20/5.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/20/6.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/20/7.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/20/8.JPG"
+    ],
     ownerComment: "☀️이런 통창 채광 맛집 귀하다",
     reviews: [
       {
@@ -569,6 +764,14 @@ const CAFES = [
       테이블: ["높이 적당", "넓이 적당"],
       메뉴: []
     },
+    images: [
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/21/1.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/21/2.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/21/3.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/21/4.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/21/5.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/21/6.JPG"
+    ],
     ownerComment: "스근하게 편한 복장으로 카공하기 좋은 카페. 내가 간 날은 못 봤지만 고양이가 있다고 함!",
     reviews: [
       {
@@ -598,6 +801,15 @@ const CAFES = [
       테이블: ["높이 적당", "넓이 적당"],
       메뉴: []
     },
+    images: [
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/22/1.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/22/2.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/22/3.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/22/4.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/22/5.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/22/6.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/22/7.JPG"
+    ],
     ownerComment: "건축의 ㄱ 자도 모르지먼 디자인 잘 했다는 걸 알 수 있는 공간..",
     reviews: [
       {
@@ -627,6 +839,16 @@ const CAFES = [
       테이블: ["높이 적당", "넓이 적당"],
       메뉴: ["맛있는 디저트"]
     },
+    images: [
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/23/1.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/23/2.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/23/3.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/23/4.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/23/5.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/23/6.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/23/7.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/23/8.JPG"
+    ],
     ownerComment: "스피커+주택개조=아늑함",
     reviews: [
       {
@@ -656,6 +878,14 @@ const CAFES = [
       테이블: ["높이 적당", "넓이 적당"],
       메뉴: []
     },
+    images: [
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/24/1.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/24/2.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/24/3.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/24/4.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/24/5.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/24/6.JPG"
+    ],
     ownerComment: "소파도 넉넉히 있어서 쉬기 좋고\n사람이 너무 많지 않으며\n자리세 내고 충분히 갈만한 곳입니다.",
     reviews: [
       {
@@ -685,6 +915,11 @@ const CAFES = [
       테이블: ["높이 적당", "넓이 적당"],
       메뉴: ["식사 대용 끼니"]
     },
+    images: [
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/25/1.PNG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/25/2.PNG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/25/3.PNG"
+    ],
     ownerComment: "총합 12번은 간 곳.",
     reviews: [
       {
@@ -714,6 +949,13 @@ const CAFES = [
       테이블: ["높이 적당", "넓이 적당", "네모"],
       메뉴: []
     },
+    images: [
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/26/1.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/26/2.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/26/3.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/26/4.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/26/5.JPG"
+    ],
     ownerComment: "24시간 5,900원. 외부 음식 가능. 2시간 자리 비우기 가능.",
     reviews: [
       {
@@ -743,6 +985,16 @@ const CAFES = [
       테이블: ["높이 적당", "넓이 적당", "네모"],
       메뉴: ["맛있는 음료"]
     },
+    images: [
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/27/1.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/27/2.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/27/3.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/27/4.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/27/5.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/27/6.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/27/7.JPG",
+      "https://ikkunlgnblozuhhrhhqr.supabase.co/storage/v1/object/public/cafe-images/27/8.JPG"
+    ],
     ownerComment: "사장님 본업이 무엇인지 궁금한 미적 감각이 담긴 공간",
     reviews: [
       {
