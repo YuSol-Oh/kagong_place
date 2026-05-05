@@ -1083,8 +1083,9 @@ function App() {
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem('kagong_user');
-    localStorage.removeItem('kagong_favorites');
-    setFavorites([]);
+    // kagong_favorites는 삭제하지 않음
+    // 로그인 상태와 무관하게 즐겨찾기 기록은 브라우저에 유지
+    // 다시 로그인하면 서버 즐겨찾기로 덮어써짐
   };
 
   const handleQuickFilterToggle = (cat, val) => {
