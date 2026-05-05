@@ -421,7 +421,7 @@ function FilterModal({ activeFilters, onApply, onClose }) {
 }
 
 // ===================== CAFE DETAIL =====================
-function CafeDetail({ cafe, cafeIndex, onBack, onWriteReview, onLike, isFavorite, onToggleFavorite }) {
+function CafeDetail({ cafe, cafeIndex, onBack, onWriteReview, onLike, isFavorite, onToggleFavorite, user, onLoginRequired }) {
   const [dbReviews, setDbReviews] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [editingReview, setEditingReview] = useState(null); // 수정 중인 리뷰
@@ -570,9 +570,13 @@ function CafeDetail({ cafe, cafeIndex, onBack, onWriteReview, onLike, isFavorite
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <span style={{ fontSize: 14, fontWeight: 800, color: "#1a1a1a" }}>
-            카공러들의 리뷰 <span style={{ color: PURPLE_DARK }}>{userReviews.length}</span>
+            오늘도 카공중인 카공러들의 리뷰 <span style={{ color: PURPLE_DARK }}>{userReviews.length}</span>
           </span>
-          <button onClick={() => { track("review_start", { cafe_id: cafe.id, cafe_name: cafe.name }); onWriteReview(); }}
+          <button onClick={() => {
+              if (!user) { onLoginRequired(); return; }
+              track("review_start", { cafe_id: cafe.id, cafe_name: cafe.name });
+              onWriteReview();
+            }}
             style={{ background: PURPLE_DARK, color: "#fff", border: "none", borderRadius: 10, padding: "7px 15px", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 2px 8px rgba(91,79,199,0.35)" }}>리뷰 쓰기</button>
         </div>
 
@@ -908,6 +912,69 @@ function LoginModal({ onClose, onLogin, currentFavorites }) {
   );
 }
 
+
+// ===================== FEEDBACK MODAL =====================
+function FeedbackModal({ onClose }) {
+  const [text, setText] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
+
+  const submit = async () => {
+    if (!text.trim()) { alert("내용을 입력해주세요"); return; }
+    setLoading(true);
+    try {
+      await fetch(`${BACKEND_URL}/api/track`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ event: "feedback", value: text.trim(), meta: { text: text.trim() } }),
+      });
+      setDone(true);
+      setTimeout(onClose, 1600);
+    } catch (e) {
+      alert("전송 중 오류가 발생했어요. 다시 시도해주세요.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 3000, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.45)", animation: "fadeIn 0.2s" }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div style={{ background: "#fff", borderRadius: 20, padding: "28px 24px 24px", width: "min(90vw, 380px)", boxShadow: "0 8px 40px rgba(0,0,0,0.18)", animation: "slideUp 0.25s ease" }}>
+        {done ? (
+          <div style={{ textAlign: "center", padding: "20px 0" }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>🎉</div>
+            <div style={{ fontSize: 17, fontWeight: 800, color: "#1a1a1a", marginBottom: 6 }}>소중한 의견 감사해요!</div>
+            <div style={{ fontSize: 13, color: "#aaa" }}>카공플레이스 개선에 반영할게요 ☕</div>
+          </div>
+        ) : (
+          <>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+              <span style={{ fontSize: 19, fontWeight: 800, color: "#1a1a1a" }}>카공플레이스 개선 제안</span>
+              <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 20, color: "#bbb", padding: 0, lineHeight: 1 }}>×</button>
+            </div>
+            <p style={{ fontSize: 13, color: "#aaa", marginBottom: 16 }}>카공플레이스 개선을 위한 의견을 남겨주세요</p>
+            <textarea
+              value={text} onChange={e => setText(e.target.value)}
+              placeholder="카공플레이스에 대한 건의사항이나 개선 의견을 자유롭게 작성해주세요"
+              maxLength={500}
+              style={{ width: "100%", minHeight: 120, border: `1.5px solid ${text ? PURPLE : "#E5E3F5"}`, borderRadius: 12, padding: "12px 14px", fontSize: 14, fontFamily: "inherit", resize: "none", outline: "none", color: "#333", background: "#fafafe", lineHeight: 1.7, marginBottom: 16, boxSizing: "border-box" }}
+              onFocus={e => e.target.style.borderColor = PURPLE}
+              onBlur={e => e.target.style.borderColor = text ? PURPLE : "#E5E3F5"}
+            />
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={onClose} style={{ flex: 1, padding: "13px", background: "#f5f5f7", border: "none", borderRadius: 12, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", color: "#555" }}>취소</button>
+              <button onClick={submit} disabled={loading} style={{ flex: 2, padding: "13px", background: loading ? "#aaa" : PURPLE, color: "#fff", border: "none", borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", fontFamily: "inherit", boxShadow: "0 3px 10px rgba(91,79,199,0.3)" }}>
+                {loading ? "전송 중..." : "보내기"}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ===================== APP =====================
 function App() {
   const [screen, setScreen] = useState("map");
@@ -924,6 +991,7 @@ function App() {
   const [showFavorites, setShowFavorites] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
   const [showLogin, setShowLogin] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
   const [favCounts, setFavCounts] = useState({});
   const [user, setUser] = useState(() => {
     try { return JSON.parse(localStorage.getItem("kagong_user") || "null"); } catch { return null; }
@@ -1076,7 +1144,7 @@ function App() {
           <FavoritesScreen cafes={cafes} favorites={favorites} onSelectCafe={(cafe) => { handleSelectCafe(cafe); setScreen("detail"); setShowFavorites(false); }} onToggleFavorite={toggleFavorite} onClose={() => setShowFavorites(false)} />
         )}
         {screen === "detail" && selectedCafe && (
-          <CafeDetail cafe={cafes.find(c => c.id === selectedCafe.id) || selectedCafe} cafeIndex={selectedCafeIndex} onBack={() => setScreen("map")} onWriteReview={() => setScreen("review")} onLike={handleLike} isFavorite={favorites.includes(selectedCafe.id)} onToggleFavorite={toggleFavorite} />
+          <CafeDetail cafe={cafes.find(c => c.id === selectedCafe.id) || selectedCafe} cafeIndex={selectedCafeIndex} onBack={() => setScreen("map")} onWriteReview={() => setScreen("review")} onLike={handleLike} isFavorite={favorites.includes(selectedCafe.id)} onToggleFavorite={toggleFavorite} user={user} onLoginRequired={() => setShowLogin(true)} />
         )}
         {screen === "review" && selectedCafe && (
           <WriteReview cafe={selectedCafe} onBack={() => setScreen("detail")} onSubmit={handleReviewSubmit} />
@@ -1087,6 +1155,24 @@ function App() {
         {showLogin && (
           <LoginModal onClose={() => setShowLogin(false)} onLogin={handleLogin} currentFavorites={favorites} />
         )}
+        {showFeedback && (
+          <FeedbackModal onClose={() => setShowFeedback(false)} />
+        )}
+        {/* 피드백 플로팅 버튼 */}
+        <button
+          onClick={() => setShowFeedback(true)}
+          style={{
+            position: "fixed", bottom: 24, right: 20, zIndex: 2500,
+            width: 48, height: 48, borderRadius: "50%",
+            background: PURPLE_DARK, color: "#fff", border: "none",
+            cursor: "pointer", fontSize: 22, display: "flex",
+            alignItems: "center", justifyContent: "center",
+            boxShadow: "0 4px 16px rgba(91,79,199,0.45)",
+            transition: "transform 0.15s",
+          }}
+          title="개선 제안">
+          💬
+        </button>
       </div>
     </div>
   );
