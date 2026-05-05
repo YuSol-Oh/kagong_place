@@ -528,11 +528,15 @@ function CafeDetail({ cafe, cafeIndex, onBack, onWriteReview, onLike, isFavorite
 
   return (
     <div style={{ position: "absolute", inset: 0, background: "#fff", zIndex: 1500, overflowY: "auto", animation: "slideInRight 0.28s ease" }} className="no-scroll">
-      <div style={{ position: "relative", width: "100%", height: 200, background: gradient, flexShrink: 0 }}>
-        <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 64, opacity: 0.6 }}>☕</div>
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(255,255,255,0.6) 0%, transparent 60%)" }} />
-        <button onClick={onBack} style={{ position: "absolute", top: 16, left: 16, width: 38, height: 38, borderRadius: "50%", background: "rgba(255,255,255,0.9)", border: "none", cursor: "pointer", fontSize: 18, boxShadow: "0 2px 12px rgba(0,0,0,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>←</button>
-        <button onClick={() => onToggleFavorite(cafe.id, cafe.name)} style={{ position: "absolute", top: 16, right: 16, width: 38, height: 38, borderRadius: "50%", background: isFavorite ? "#FFF0F3" : "rgba(255,255,255,0.9)", border: isFavorite ? "1.5px solid #FECDD3" : "none", cursor: "pointer", fontSize: 19, boxShadow: "0 2px 12px rgba(0,0,0,0.15)", display: "flex", alignItems: "center", justifyContent: "center", color: isFavorite ? "#FF4B6E" : "#ccc" }}>{isFavorite ? "♥" : "♡"}</button>
+      <div style={{ position: "relative", width: "100%", height: 260, background: gradient, flexShrink: 0, overflow: "hidden" }}>
+        {/* 이미지 슬라이더 */}
+        <ImageSlider images={cafe.images} gradient={gradient} />
+        {/* 하단 그라디언트 오버레이 */}
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.35) 0%, transparent 50%)", pointerEvents: "none" }} />
+        {/* 뒤로가기 버튼 */}
+        <button onClick={onBack} style={{ position: "absolute", top: 16, left: 16, width: 38, height: 38, borderRadius: "50%", background: "rgba(255,255,255,0.9)", border: "none", cursor: "pointer", fontSize: 18, boxShadow: "0 2px 12px rgba(0,0,0,0.15)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 3 }}>←</button>
+        {/* 즐겨찾기 버튼 */}
+        <button onClick={() => onToggleFavorite(cafe.id, cafe.name)} style={{ position: "absolute", top: 16, right: 16, width: 38, height: 38, borderRadius: "50%", background: isFavorite ? "#FFF0F3" : "rgba(255,255,255,0.9)", border: isFavorite ? "1.5px solid #FECDD3" : "none", cursor: "pointer", fontSize: 19, boxShadow: "0 2px 12px rgba(0,0,0,0.15)", display: "flex", alignItems: "center", justifyContent: "center", color: isFavorite ? "#FF4B6E" : "#ccc", zIndex: 3 }}>{isFavorite ? "♥" : "♡"}</button>
       </div>
 
       <div style={{ padding: "20px 20px 100px" }}>
@@ -841,6 +845,59 @@ function WriteReview({ cafe, onBack, onSubmit }) {
           {loading ? "등록 중..." : "등록하기"}
         </button>
       </div>
+    </div>
+  );
+}
+
+
+// ===================== IMAGE SLIDER =====================
+function ImageSlider({ images, gradient }) {
+  const [current, setCurrent] = useState(0);
+
+  // images가 없거나 빈 배열이면 그라디언트 폴백
+  if (!images || images.length === 0) {
+    return (
+      <div style={{ width: "100%", height: "100%", background: gradient, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 64, opacity: 0.6 }}>☕</div>
+    );
+  }
+
+  const prev = (e) => { e.stopPropagation(); setCurrent(c => (c - 1 + images.length) % images.length); };
+  const next = (e) => { e.stopPropagation(); setCurrent(c => (c + 1) % images.length); };
+
+  return (
+    <div style={{ width: "100%", height: "100%", position: "relative", overflow: "hidden" }}>
+      {/* 사진 */}
+      <img
+        src={images[current]}
+        alt={`사진 ${current + 1}`}
+        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+        onError={e => { e.target.style.display = "none"; }}
+      />
+
+      {/* 이전/다음 버튼 — 사진 2장 이상일 때만 */}
+      {images.length > 1 && (
+        <>
+          <button onClick={prev} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", width: 32, height: 32, borderRadius: "50%", background: "rgba(0,0,0,0.35)", border: "none", cursor: "pointer", color: "#fff", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}>‹</button>
+          <button onClick={next} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", width: 32, height: 32, borderRadius: "50%", background: "rgba(0,0,0,0.35)", border: "none", cursor: "pointer", color: "#fff", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}>›</button>
+        </>
+      )}
+
+      {/* 인디케이터 도트 */}
+      {images.length > 1 && (
+        <div style={{ position: "absolute", bottom: 10, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 5, zIndex: 2 }}>
+          {images.map((_, i) => (
+            <button key={i} onClick={e => { e.stopPropagation(); setCurrent(i); }}
+              style={{ width: i === current ? 16 : 6, height: 6, borderRadius: 3, background: i === current ? "#fff" : "rgba(255,255,255,0.5)", border: "none", cursor: "pointer", padding: 0, transition: "all 0.2s" }} />
+          ))}
+        </div>
+      )}
+
+      {/* 장 수 표시 */}
+      {images.length > 1 && (
+        <div style={{ position: "absolute", top: 10, right: 56, background: "rgba(0,0,0,0.45)", color: "#fff", fontSize: 11, fontWeight: 600, padding: "3px 8px", borderRadius: 10, zIndex: 2 }}>
+          {current + 1} / {images.length}
+        </div>
+      )}
     </div>
   );
 }
